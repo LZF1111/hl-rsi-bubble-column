@@ -199,3 +199,14 @@
   .pair-legend { grid-column: 1 / -1; }
   .hero-col { width: 110px; height: 420px; }
 }
+
+.hero-cap { max-width: 440px; margin: 0 0 10px auto; font-size: 13px; font-weight: 600; color: var(--ink2); text-align: center; }
+#heroPl, .hero-ep { max-width: 440px; margin-left: auto; }
+.hero-ep { margin-top: 4px; }
+.film-foot { display: flex; justify-content: flex-end; margin-top: 6px; }
+@media (max-width: 1060px) { .hero-cap, #heroPl, .hero-ep { margin-left: 0; } }
+
+.hero-fig .vs .col-frame { height: 290px; }
+.hero-fig { padding-top: 12px; }
+.hero { padding-bottom: 0; }
+@media (max-width: 720px) { .hero-fig .vs .col-frame { height: 280px; } }

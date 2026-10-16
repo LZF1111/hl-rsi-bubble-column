@@ -132,6 +132,20 @@
         g.beginPath(); g.moveTo(0, y0); g.lineTo(b.w, y0); g.moveTo(0, y1); g.lineTo(b.w, y1);
         g.moveTo(b.w / 3, y0); g.lineTo(b.w / 3, y1); g.moveTo(2 * b.w / 3, y0); g.lineTo(2 * b.w / 3, y1); g.stroke(); g.restore();
       }
+      if (this.o.guide) {
+        // scoring window 0.05–0.6 m split into thirds, and the 9 wall-pressure probes the model reads
+        const y0 = b.h * (1 - 0.05), y1 = b.h * (1 - 0.6), d = this.dpr;
+        g.save(); g.strokeStyle = 'rgba(29,29,31,.55)'; g.lineWidth = 1.2 * d; g.setLineDash([4 * d, 3 * d]);
+        g.strokeRect(1 * d, y1, b.w - 2 * d, y0 - y1);
+        g.beginPath(); g.moveTo(b.w / 3, y0); g.lineTo(b.w / 3, y1); g.moveTo(2 * b.w / 3, y0); g.lineTo(2 * b.w / 3, y1); g.stroke();
+        g.setLineDash([]); g.fillStyle = 'rgba(29,29,31,.7)'; g.font = `600 ${10 * d}px -apple-system, "PingFang SC", sans-serif`; g.textAlign = 'center';
+        [Lt('左', 'L'), Lt('中', 'C'), Lt('右', 'R')].forEach((s, i) => g.fillText(s, (i + 0.5) * b.w / 3, y0 - 6 * d));
+        for (const hy of [0.15, 0.35, 0.55]) for (const fx of [1 / 6, 0.5, 5 / 6]) {
+          g.beginPath(); g.arc(fx * b.w, b.h * (1 - hy), 3.2 * d, 0, 2 * Math.PI);
+          g.fillStyle = '#1d1d1f'; g.fill(); g.lineWidth = 1.5 * d; g.strokeStyle = '#fff'; g.stroke();
+        }
+        g.restore();
+      }
       if (this.ux && !this.reduce && this.o.tracers) {
         if (this.parts.length !== this.o.tracers) this.parts = Array.from({ length: this.o.tracers }, () => Object.assign(this.spawn(), { age: Math.random() * 100 }));
         const sx = b.w / this.o.nx, sy = b.h / this.o.ny;

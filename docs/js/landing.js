@@ -14,17 +14,28 @@
   /* hero: real held-out CFD, equal flow vs champion; deviation from the lateral mean, time-mean from 3 s */
   Promise.all([D.getJSON('data/fields/fixed.json'), D.getJSON(`data/fields/${RUN}.json`)]).then(([fx, hl]) => {
     const A = D.episode(fx.episodes.fixed_s7, fx), B = D.episode(hl.episodes.learned_s7, hl);
-    document.getElementById('heroVs').innerHTML = D.vsPanel('hA', L('均匀布气', 'Equal flow'), L('三口 30 mm/s', '30 mm/s each'), L('3 s 后平均不均匀度', 'Mean imbalance after 3 s'))
-      + D.vsPanel('hB', L('FlowEvolve 冠军', 'FlowEvolve champion'), L('第 6 轮进化结果', 'evolved in round 6'), L('3 s 后平均不均匀度', 'Mean imbalance after 3 s'), true);
+    const lab = L('到此刻累计扣分（越少越好）', 'Penalty so far (lower is better)');
+    document.getElementById('heroVs').innerHTML = D.vsPanel('hA', L('均匀布气', 'Equal flow'), L('三口都是 30 mm/s', '30 mm/s at every inlet'), lab)
+      + D.vsPanel('hB', L('FlowEvolve 冠军', 'FlowEvolve champion'), L('第 6 轮自己进化出的 3 行程序', 'a 3-line program it evolved in round 6'), lab, true);
     Lang.bind(document.getElementById('heroVs'));
-    const o = { nx: fx.nx, ny: fx.ny };
+    const o = { nx: fx.nx, ny: fx.ny, guide: true };
     const va = new CFD.FieldView(document.getElementById('hAC'), o), vb = new CFD.FieldView(document.getElementById('hBC'), o);
-    document.getElementById('heroCbar').innerHTML = CFD.colorbar('dev', Lt('气含率偏差', 'gas-fraction deviation'));
-    // final state: time-mean from 3 s to 20 s, mean imbalance over the same window
-    const k = A.t.length - 1, step = 199;
-    D.vsFill('hA', va, CFD.cumMean(A.a, A.t, k), A.ux[k], A.uy[k], D.inletAt(A.velocities, A.t[k]), fx.nx, fx.ny, runMeanI(A.imbalance, step).toFixed(3));
-    const ia = runMeanI(A.imbalance, step), ib = runMeanI(B.imbalance, step);
-    D.vsFill('hB', vb, CFD.cumMean(B.a, B.t, k), B.ux[k], B.uy[k], D.inletAt(B.velocities, B.t[k]), fx.nx, fx.ny, `${ib.toFixed(3)}  −${Math.round(100 * (1 - ib / ia))}%`);
+    document.getElementById('heroCbar').innerHTML = CFD.colorbar('dev', Lt('比同高度平均', 'vs. same-height average'));
+    const pa = D.cumPenalty(A.reward), pb = D.cumPenalty(B.reward);
+    const f = C.lines(document.getElementById('heroEp'), [
+      { name: Lt('均匀布气', 'Equal flow'), color: '#8e8e93', pts: pa, width: 2.5 },
+      { name: Lt('冠军', 'Champion'), color: '#0066cc', pts: pb, width: 3, area: true }],
+      { h: 170, x: [0, 20.3], y: [0, 15.5], xlabel: Lt('回合内时间 (s)', 'Time in the episode (s)'), ylabel: Lt('累计扣分', 'Penalty'), xname: 't', digits: 2, margin: { l: 40, b: 32, t: 8, r: 70 } });
+    const tA = pa[pa.length - 1][1], tB = pb[pb.length - 1][1];
+    C.text(f.g, f.sx(20.2) + 4, f.sy(tA) + 4, tA.toFixed(1), { 'font-size': 12, fill: '#6e6e73', 'font-weight': 600 });
+    C.text(f.g, f.sx(20.2) + 4, f.sy(tB) + 4, `${tB.toFixed(1)}  −${Math.round(100 * (1 - tB / tA))}%`, { 'font-size': 12, fill: '#0066cc', 'font-weight': 700 });
+    const guide = C.el('line', { y1: f.m.t, y2: f.H - f.m.b, stroke: '#1d1d1f', 'stroke-width': 1, opacity: 0.4 }, f.svg);
+    D.player(document.getElementById('heroPl'), { watch: document.getElementById('heroVs'), n: A.t.length, t: A.t, fps: 7, draw: (k, mode) => {
+      const t = A.t[k];
+      D.vsFill('hA', va, D.frameAt(A, k, mode), A.ux[k], A.uy[k], D.inletAt(A.velocities, t), fx.nx, fx.ny, D.cumAt(pa, t).toFixed(2));
+      D.vsFill('hB', vb, D.frameAt(B, k, mode), B.ux[k], B.uy[k], D.inletAt(B.velocities, t), fx.nx, fx.ny, D.cumAt(pb, t).toFixed(2));
+      guide.setAttribute('x1', f.sx(t)); guide.setAttribute('x2', f.sx(t));
+    } });
   });
 
   /* fine-mesh time-mean fields + lateral profile */
@@ -35,7 +46,7 @@
     Lang.bind(document.getElementById('meanVs'));
     D.vsFill('mA', new CFD.FieldView(document.getElementById('mAC'), o), fa.a, fa.ux, fa.uy, fa.u, F.nx, F.ny);
     D.vsFill('mB', new CFD.FieldView(document.getElementById('mBC'), o), fb.a, fb.ux, fb.uy, fb.u, F.nx, F.ny);
-    document.getElementById('meanCbar').innerHTML = CFD.colorbar('dev', Lt('气含率偏差', 'gas-fraction deviation'));
+    document.getElementById('meanCbar').innerHTML = CFD.colorbar('dev', Lt('比同高度平均', 'vs. same-height average'));
     const prof = f => { const out = []; for (let i = 0; i < F.nx; i++) { let s = 0, n = 0; for (let j = 6; j < 72; j++) { s += f.a[j * F.nx + i]; n++; } out.push([(i + 0.5) / F.nx * 150, 100 * s / n]); } return out; };
     C.lines(document.getElementById('profChart'), [
       { name: Lt('均匀布气', 'Equal flow'), color: '#8e8e93', pts: prof(fa), width: 2.5 },
@@ -51,10 +62,10 @@
     const st = (n, zh, en, dzh, den, champ) => ({ r: n ? R.find(x => x.round === n) : null, zh, en, dzh, den, champ });
     const stages = [
       st(0, '起点：均匀布气', 'Start: equal flow', '三口各 30 mm/s。没有任何先验，提示词里也不含控制建议。', '30 mm/s per inlet. No priors; the prompt contains no control hints.'),
-      st(1, '第 1 轮：试探性小改', 'Round 1: a cautious nudge', '看完一条基线曲线，猜测"中间气偏多"，把中间口从 30 降到 27 mm/s。平均 +1.36，但在一个确认条件上 −3.0，未采纳。', 'After one baseline trace it guessed "too much gas in the centre" and cut the centre from 30 to 27 mm/s. Mean +1.36, but −3.0 on one confirmation condition: not adopted.'),
-      st(5, '第 5 轮：加入压力反馈', 'Round 5: adds pressure feedback', '改写成读取壁面压力的反馈程序。6 个条件全为正，但幅度太小，提升不够稳定。', 'Rewritten as a feedback program reading wall pressures. Positive on all 6 conditions, but too gentle to be reliable.'),
-      st(6, '第 6 轮：大胆挪气 → 冠军', 'Round 6: bold shift → champion', '回到最简结构，只写 3 行：等塔充满气（约 2 s）后，3.5 s 内把中间口降到 17 mm/s、两侧升到 36 mm/s 并保持。9 个条件全部通过，晋升冠军，留出条件 +2.61。', 'Back to the simplest form, 3 lines: once the column has filled (≈2 s), ramp the centre down to 17 mm/s and the sides up to 36 mm/s over 3.5 s, then hold. Passed on all 9 conditions; promoted; +2.61 on held-out conditions.', true),
-      st(7, '第 7 轮：再加大一点？', 'Round 7: push it further?', '只改一个数：中间口继续降到 13 mm/s。平均更高（+3.49），但和冠军相比没有稳定优势，裁决不收。', 'One number changed: centre down to 13 mm/s. Higher mean (+3.49), but no consistent edge over the champion, so it was not adopted.'),
+      st(1, '第 1 轮：试探性小改', 'Round 1: a cautious nudge', '看完一条基线曲线，猜测"中间气偏多"，把中间口从 30 降到 27 mm/s。6 个练习场景平均 +1.36，进了加赛，但加赛第一场输了 3.0 分，未采纳。', 'After one baseline trace it guessed "too much gas in the centre" and cut the centre from 30 to 27 mm/s. Averaged +1.36 over 6 practice scenes and reached the rematch, but lost the first rematch by 3.0: not adopted.'),
+      st(5, '第 5 轮：加入压力反馈', 'Round 5: adds pressure feedback', '改写成读取壁面压力的反馈程序。6 个场景全都赢了均匀布气，但赢得太少，和运气波动分不开。', 'Rewritten as a feedback program reading wall pressures. Beat equal flow in all 6 scenes, but by too little to tell apart from luck.'),
+      st(6, '第 6 轮：大胆挪气 → 冠军', 'Round 6: bold shift → champion', '回到最简结构，只写 3 行：等塔充满气（约 2 s）后，3.5 s 内把中间口降到 17 mm/s、两侧升到 36 mm/s 并保持。6 场练习 + 3 场加赛全部通过，晋升冠军；在从未见过的封存考题上同样提升 +2.61。', 'Back to the simplest form, 3 lines: once the column has filled (≈2 s), ramp the centre down to 17 mm/s and the sides up to 36 mm/s over 3.5 s, then hold. Passed 6 practice scenes and 3 rematches; promoted; +2.61 on sealed tests it never saw.', true),
+      st(7, '第 7 轮：再加大一点？', 'Round 7: push it further?', '只改一个数：中间口继续降到 13 mm/s。对均匀布气的平均分更高（+3.49），但和冠军逐场比只是有输有赢，领先不够大，不收。', 'One number changed: centre down to 13 mm/s. Higher average vs. equal flow (+3.49), but head-to-head with the champion it won some and lost some; not adopted.'),
     ];
     renderFilm(stages, run, rr);
     renderEvo(run);
@@ -66,46 +77,45 @@
   function renderFilm(stages, run, rr) {
     const list = document.getElementById('filmList'), det = document.getElementById('filmDetail'), vs = document.getElementById('filmVs');
     const sigs = stages.map(s => D.sig(s.r));
-    list.innerHTML = stages.map((s, i) => `<button class="stage${s.champ ? ' champ' : ''}" data-i="${i}"><span class="stage-k">${s.r ? 'R' + s.r.round : 'R0'}</span><span class="stage-b"><b>${L(s.zh, s.en)}</b><small>${sigs[i].split.join(' · ')} mm/s${s.r ? ' · ' + Lt('提升', 'gain') + ' ' + D.f2(s.r.mean_gain) : ''}</small></span>${s.champ ? '<span class="pill acc">★</span>' : ''}</button>`).join('');
+    list.innerHTML = stages.map((s, i) => `<button class="stage${s.champ ? ' champ' : ''}" data-i="${i}"><span class="stage-k">${s.r ? 'R' + s.r.round : 'R0'}</span><span class="stage-b"><b>${L(s.zh, s.en)}</b><small>${L('左/中/右', 'L/C/R')} ${sigs[i].split.join(' · ')} mm/s${s.r ? ' · ' + Lt('得分', 'score') + ' ' + D.f2(s.r.mean_gain) : ''}</small></span>${s.champ ? '<span class="pill acc">★</span>' : ''}</button>`).join('');
     const eps = stages.map(s => rr && rr.rounds[s.r ? String(s.r.round) : '0'] ? D.roundEpisode(rr.rounds[s.r ? String(s.r.round) : '0'], rr) : null);
-    document.getElementById('filmCbar').innerHTML = CFD.colorbar('dev', Lt('气含率偏差', 'gas-fraction deviation'));
-    const sl = document.getElementById('filmT'), tl = document.getElementById('filmTl'), play = document.getElementById('filmPlay');
-    const n = eps[0] ? eps[0].t.length : 1; sl.max = n - 1; sl.value = n - 1;
-    let cur = 3, va, vb;
-    const baseI = eps[0] ? eps[0].I : null;
-    const meanI = (e, k) => { let s = 0, c = 0; for (let i = 0; i <= k; i++) if (e.t[i] >= 3) { s += e.I[i]; c++; } return c ? s / c : null; };
-    const draw = () => {
-      const k = +sl.value, A = eps[0], B = eps[cur]; if (!A || !B) return;
-      const ia = meanI(A, k), ib = meanI(B, k);
-      D.vsFill('fA', va, CFD.cumMean(A.a, A.t, k), A.ux[k], A.uy[k], A.v[k], 12, 40, '0');
-      const g = stages[cur].r ? stages[cur].r.mean_gain : 0;
-      D.vsFill('fB', vb, CFD.cumMean(B.a, B.t, k), B.ux[k], B.uy[k], B.v[k], 12, 40, D.f2(g));
-      tl.textContent = `t = ${A.t[k].toFixed(1)} s`;
+    document.getElementById('filmCbar').innerHTML = CFD.colorbar('dev', Lt('比同高度平均', 'vs. same-height average'));
+    let cur = 3, va, vb, pl, guide, fE;
+    const A = eps[0];
+    const draw = (k, mode) => {
+      const B = eps[cur]; if (!A || !B) return;
+      const t = A.t[k];
+      D.vsFill('fA', va, D.frameAt(A, k, mode), A.ux[k], A.uy[k], A.v[k], 12, 40, D.cumAt(A.cp, t).toFixed(2));
+      D.vsFill('fB', vb, D.frameAt(B, k, mode), B.ux[k], B.uy[k], B.v[k], 12, 40, D.cumAt(B.cp, t).toFixed(2));
+      if (guide) { guide.setAttribute('x1', fE.sx(t)); guide.setAttribute('x2', fE.sx(t)); }
     };
     const select = i => {
-      cur = i; const s = stages[i];
+      cur = i; const s = stages[i], B = eps[i];
       list.querySelectorAll('.stage').forEach(b => b.classList.toggle('on', +b.dataset.i === i));
-      vs.innerHTML = D.vsPanel('fA', L('起点：均匀布气', 'Start: equal flow'), '30 · 30 · 30', L('得分提升（6 条件平均）', 'Score gain (6-condition mean)'))
-        + D.vsPanel('fB', s.r ? L(`第 ${s.r.round} 轮程序`, `Round ${s.r.round} program`) : L('起点', 'Start'), sigs[i].split.join(' · '), L('得分提升（6 条件平均）', 'Score gain (6-condition mean)'), s.champ);
+      const lab = L('到此刻累计扣分', 'Penalty so far');
+      vs.innerHTML = D.vsPanel('fA', L('均匀布气', 'Equal flow'), '30 · 30 · 30', lab)
+        + D.vsPanel('fB', s.r ? L(`第 ${s.r.round} 轮程序`, `Round ${s.r.round} program`) : L('起点', 'Start'), sigs[i].split.join(' · '), lab, s.champ);
       Lang.bind(vs);
-      va = new CFD.FieldView(document.getElementById('fAC'), { nx: 12, ny: 40 }); vb = new CFD.FieldView(document.getElementById('fBC'), { nx: 12, ny: 40 });
-      draw();
+      va = new CFD.FieldView(document.getElementById('fAC'), { nx: 12, ny: 40, guide: true }); vb = new CFD.FieldView(document.getElementById('fBC'), { nx: 12, ny: 40, guide: true });
+      if (A && B) {
+        const tA = A.cp[A.cp.length - 1][1], tB = B.cp[B.cp.length - 1][1];
+        fE = C.lines(document.getElementById('filmEp'), [
+          { name: Lt('均匀布气', 'Equal flow'), color: '#8e8e93', pts: A.cp, width: 2.5 },
+          { name: s.r ? 'R' + s.r.round : 'R0', color: s.champ ? '#0066cc' : '#5a9be0', pts: B.cp, width: 3, area: true }],
+          { h: 170, x: [0, 20.3], y: [0, Math.max(tA, tB) * 1.1], xlabel: Lt('回合内时间 (s)', 'Time in the episode (s)'), ylabel: Lt('累计扣分', 'Penalty'), xname: 't', digits: 2, margin: { l: 40, b: 32, t: 8, r: 80 } });
+        C.text(fE.g, fE.sx(20.2) + 4, fE.sy(tA) + 4, tA.toFixed(1), { 'font-size': 12, fill: '#6e6e73', 'font-weight': 600 });
+        if (i) C.text(fE.g, fE.sx(20.2) + 4, fE.sy(tB) + (tB > tA ? -4 : 12), `${tB.toFixed(1)}  ${tB < tA ? '−' : '+'}${Math.abs(Math.round(100 * (1 - tB / tA)))}%`, { 'font-size': 12, fill: '#0066cc', 'font-weight': 700 });
+        guide = C.el('line', { y1: fE.m.t, y2: fE.H - fE.m.b, stroke: '#1d1d1f', 'stroke-width': 1, opacity: 0.4 }, fE.svg);
+      }
+      if (pl) pl.draw(); else if (A) pl = D.player(document.getElementById('filmPl'), { watch: vs, n: A.t.length, t: A.t, fps: 6, draw: (k, m) => draw(k, m) });
       const r = s.r, champR = r && r._champ.round ? run.rounds.find(x => x.round === r._champ.round) : null, dl = D.delta(D.sig(champR), sigs[i]);
       const src = r ? r.source : 'action = [0.0, 0.0, 0.0]\n';
       const df = r && r.parent_source ? D.diff(r.parent_source, src) : { html: D.highlight(src), add: 0, del: 0 };
-      const tst = r && r.test && r.test.all ? r.test.all : r && r.test ? r.test.dev : null;
       det.innerHTML = `<div class="fd-grid"><div><h4>${L('这一轮', 'This round')}</h4><p>${L(s.dzh, s.den)}</p>
-        ${r ? `<div class="ck"><div><h5>${L('相对当时冠军，改了', 'Changed vs. the champion')}</h5>${dl.changed.length ? dl.changed.map(x => `<p>${x}</p>`).join('') : `<p class="muted">${L('只调了参数细节', 'only fine parameter tweaks')}</p>`}</div><div><h5>${L('保留不变', 'Kept')}</h5>${dl.kept.map(x => `<p>${x}</p>`).join('') || '<p>—</p>'}</div></div>
-        <div class="verdict-line ${r.decision === 'accepted' ? 'ok' : ''}">${r.decision === 'accepted' ? L('✓ 9 个条件下都稳定优于原冠军 → 采纳', '✓ Consistently better than the old champion on all 9 conditions → adopted') : r.decision === 'rejected_screen' ? L('✗ 前 5 秒就明显变差 → 提前淘汰', '✗ Clearly worse in the first 5 s → screened out') : L('✗ 有的条件好、有的差，优势不稳定 → 不采纳', '✗ Better on some conditions, worse on others; no reliable edge → not adopted')}</div>` : ''}</div>
+        ${r ? `<div class="ck"><div><h5>${L('和当时冠军相比，改了', 'Changed vs. the champion')}</h5>${dl.changed.length ? dl.changed.map(x => `<p>${x}</p>`).join('') : `<p class="muted">${L('只调了参数细节', 'only fine parameter tweaks')}</p>`}</div><div><h5>${L('保留不变', 'Kept')}</h5>${dl.kept.map(x => `<p>${x}</p>`).join('') || '<p>—</p>'}</div></div>
+        <h5 class="sc-h">${L('和冠军逐场比赛', 'Scene-by-scene against the champion')}</h5>${D.scorecard(run, r)}` : ''}</div>
         <div><h4>${L('程序代码', 'Program code')}${r ? ` <span class="pill acc">+${df.add}</span><span class="pill">−${df.del}</span>` : ''}</h4><pre class="code">${df.html}</pre>${r ? `<details class="fd-why"><summary>${L('模型写下的理由（英文原文）', 'Rationale written by the model (verbatim)')}</summary><p>${D.esc(r.rationale || '')}</p></details>` : ''}<a class="btn ghost" href="console.html#round/${RUN}/${r ? r.round : 1}">${L('在控制台查看这一轮的完整过程 ›', 'See this round in full in the console ›')}</a></div></div>`;
       Lang.bind(det);
-    };
-    sl.oninput = draw;
-    let timer = 0;
-    play.onclick = () => {
-      if (timer) { clearInterval(timer); timer = 0; play.textContent = '▶'; return; }
-      play.textContent = '❚❚'; if (+sl.value >= n - 1) sl.value = 0;
-      timer = setInterval(() => { if (+sl.value >= n - 1) { clearInterval(timer); timer = 0; play.textContent = '▶'; return; } sl.value = +sl.value + 1; draw(); }, 120);
     };
     list.querySelectorAll('.stage').forEach(b => b.onclick = () => select(+b.dataset.i));
     select(3);
@@ -115,7 +125,7 @@
     const R = run.rounds, ys = R.map(r => r.mean_gain).filter(v => v != null);
     const step = [[0, 0]]; R.forEach(r => { step.push([r.round - 0.5, step[step.length - 1][1]]); step.push([r.round - 0.5, r._champAfter.mean]); }); step.push([R.length + 0.5, run._final.mean]);
     const f = C.lines(document.getElementById('evoChart'), [{ name: Lt('冠军', 'Champion'), color: '#0066cc', pts: step, width: 3, nohover: true, area: true }],
-      { h: 260, x: [0, R.length + 1], y: [Math.min(-2, ...ys) - 0.3, Math.max(...ys) + 0.5], zero: true, xlabel: Lt('进化轮次', 'Round'), ylabel: Lt('相对均匀布气的提升', 'Gain over equal flow'), hover: false });
+      { h: 260, x: [0, R.length + 1], y: [Math.min(-2, ...ys) - 0.3, Math.max(...ys) + 0.5], zero: true, xlabel: Lt('进化轮次', 'Round'), ylabel: Lt('比均匀布气少扣的分', 'Penalty saved vs. equal flow'), hover: false });
     C.scatter(f, R.filter(r => r.mean_gain != null).map(r => ({ x: r.round, y: r.mean_gain, r: r.decision === 'accepted' ? 8 : 4.5, ring: r.decision === 'accepted',
       color: r.decision === 'accepted' ? '#0066cc' : r.decision === 'rejected_screen' ? '#e0a030' : '#c7c7cc',
       html: `<b>R${r.round}</b> ${D.f2(r.mean_gain)}` })));
@@ -150,9 +160,11 @@
 
   function renderLyap(meta) {
     const ly = meta.lyapunov;
-    C.lines(document.getElementById('lyapChart'), Object.entries(ly).map(([k, v], j) => ({ name: k === 'd1e-6' ? 'δ = 10⁻⁶ m/s' : 'δ = 10⁻⁵ m/s', color: j ? '#6e40c9' : '#0066cc', width: 2.5,
+    C.lines(document.getElementById('lyapChart'), Object.entries(ly).map(([k, v], j) => ({ name: k === 'd1e-6' ? Lt('改动 0.000001 m/s', 'nudge 0.000001 m/s') : Lt('改动 0.00001 m/s', 'nudge 0.00001 m/s'), color: j ? '#6e40c9' : '#0066cc', width: 2.5,
       pts: v.t.map((x, i) => [x, v.rms[i] > 0 ? Math.log10(v.rms[i]) : null]) })),
-      { h: 240, x: [0, 20.2], xlabel: Lt('时间 t (s)', 'Time t (s)'), ylabel: 'log₁₀ ‖Δα‖', xname: 't', yfmt: v => '10^' + v.toFixed(0), digits: 2 });
+      { h: 240, x: [0, 20.2], xlabel: Lt('时间 (s)', 'Time (s)'), ylabel: Lt('两次运行的差别', 'Difference between runs'), xname: 't', yfmt: v => ({ '-6': Lt('百万分之一', '1e-6'), '-4': Lt('万分之一', '1e-4'), '-2': Lt('百分之一', '1e-2'), '0': '1' }[v.toFixed(0)] || ''), hover: false, margin: { l: 78 } });
+    const f = document.getElementById('lyapChart').querySelector('svg');
+    if (f) f.style.overflow = 'visible';
   }
 
   Lang.on(() => location.reload());

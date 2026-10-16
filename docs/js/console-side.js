@@ -13,7 +13,7 @@
         <dt>${L('模型', 'Model')}</dt><dd>${L('双欧拉，层流', 'Euler–Euler, laminar')}</dd>
         <dt>${L('网格', 'Mesh')}</dt><dd>12 × 40 × 4 · ${L('细网格复核', 'fine check')} 30 × 120 × 10</dd>
         <dt>${L('控制步长', 'Control step')}</dt><dd>0.1 s · 200 ${L('步', 'steps')} = 20 s</dd>
-        <dt>${L('观测', 'Sensing')}</dt><dd>${L('9 个壁面压力 + 变化率 + 上步动作', '9 wall pressures + rates + last action')}</dd>
+        <dt>${L('观测', 'Sensing')}</dt><dd>${L('9 个压力计（3 个高度 × 左中右）+ 变化率 + 上步气速', '9 pressure probes (3 heights × L/C/R) + rates + last velocities')}</dd>
       </dl>`;
 
       const demo = `<p>${L('拖动中间口气速，两侧自动补齐，总气量恒定。云图是真实细网格 CFD 时均气相分布，在相邻两个实算工况之间插值。',
@@ -48,19 +48,21 @@
         <div><i class="gp">P</i><span>${L('三个高度上横向压力差的平均，惩罚强烈的横向晃动。', 'Mean lateral pressure spread at three heights; penalises strong sloshing.')}</span></div>
         <div><i class="gs">S</i><span>${L('阀门动作平方，惩罚抖动。', 'Squared valve moves; penalises chatter.')}</span></div>
       </div>
-      <div class="one-line">${L('一句话：<b>气在三段里分得越匀、晃得越少、阀门动得越稳，分越高。</b>均匀布气约 −12.5，最佳冠军在留出条件上提升 +2.6。', '<b>In one line: spread the gas evenly, slosh less, move the valves gently.</b> Equal flow scores about −12.5; the best champion adds +2.6 on held-out conditions.')}</div></div>`;
+      <div class="one-line">${L('一句话：<b>气在三段里分得越匀、晃得越少、阀门动得越稳，分越高。</b>均匀布气一回合约扣 12 分，最佳冠军在封存考题上少扣 2.6 分。', '<b>In one line: spread the gas evenly, slosh less, move the valves gently.</b> Equal flow loses about 12 points per episode; the best champion saves +2.6 on the sealed tests.')}</div></div>`;
 
-      const evalPT = `<p>${L('流动是混沌的：同一个程序换一个极小的启动扰动，分数就会上下波动约 ±1.5。所以单次跑得好不算数，必须过下面四关。', 'The flow is chaotic: the same program scores ±1.5 differently under a tiny start-up perturbation. One good run proves nothing, so a candidate must pass four gates.')}</p><div class="pipe">
-        <div><b>${L('① 快速初筛', '① Quick screen')}</b>${L('先跑 5 秒，明显变差的直接淘汰，节省算力', 'Run 5 s first; clearly worse programs are dropped to save compute')}</div>
-        <div><b>${L('② 6 个条件逐一对比', '② Head-to-head on 6 conditions')}</b>${L('在同一组扰动下，新程序与现任冠军一对一比分', 'New program vs. current champion under the same perturbations')}</div>
-        <div><b>${L('③ 稳定胜出才算', '③ Must win consistently')}</b>${L('平均领先要明显大于噪声（约 2 倍标准误），且没有一局大败', 'The average lead must clearly exceed the noise (≈ 2 standard errors), with no heavy loss')}</div>
-        <div><b>${L('④ 再加 3 个新条件确认', '④ Confirm on 3 fresh conditions')}</b>${L('换一组从没用过的扰动再比一次，仍然领先才晋升冠军', 'Re-test on unused perturbations; promoted only if it still leads')}</div>
-        <div><b>${L('最后：封存测试', 'Finally: sealed test')}</b>${L('ξ<sub>7</sub>、ξ<sub>8</sub> 从不给模型看，只用来给最终冠军打分', 'ξ<sub>7</sub>, ξ<sub>8</sub> are never shown to the model; they only score the final champion')}</div></div>`;
-      const evalP3 = `<p>${L('对照组规则：只用 3 个条件，平均领先 0.5 就晋升。', 'Control-arm rule: 3 conditions only; promote on a 0.5 average lead.')}</p><div class="pipe">
+      const evalPT = `<p>${L('<b>什么是"场景"：</b>同一个塔，只在开头 0.2 秒把进气改动 0.0001 m/s。因为流动是混沌的，3 秒后就变成完全不同的流动，同一个程序的分数会差 ±1.5。我们用这种方法造出：', '<b>What a "scene" is:</b> the same column, with the inlet nudged by 0.0001 m/s during the first 0.2 s. The flow is chaotic, so within 3 s it becomes a completely different flow, and the same program\'s score varies by ±1.5. This gives us:')}</p>
+      <ul class="cons"><li><b>${L('6 个练习场景', '6 practice scenes')}</b><span>${L('每轮都用来打分', 'used to score every round')}</span></li><li><b>${L('3 个加赛场景', '3 rematch scenes')}</b><span>${L('只在快要上位时才用', 'only used just before promotion')}</span></li><li><b>${L('2 个封存考题', '2 sealed tests')}</b><span>${L('从不给模型看，只考最终冠军', 'never shown; only score the final champion')}</span></li></ul>
+      <div class="pipe">
+        <div><b>${L('① 快速初筛', '① Quick screen')}</b>${L('每个场景先跑 5 秒，明显比均匀布气差就淘汰，省算力', '5 s in each scene; clearly worse than equal flow is dropped')}</div>
+        <div><b>${L('② 和冠军同场比 6 场', '② 6 scenes head-to-head')}</b>${L('新程序与现任冠军在同样的 6 个场景里各跑完整回合，逐场看谁扣分少', 'New program and champion each run full episodes in the same 6 scenes; compare scene by scene')}</div>
+        <div><b>${L('③ 要赢得明显', '③ Must win clearly')}</b>${L('平均每场领先 > 0.3 分，领先要大于运气波动的 2 倍，且没有一场输超过 2 分', 'Average lead > 0.3, lead more than 2× the luck scatter, and no scene lost by more than 2')}</div>
+        <div><b>${L('④ 3 场加赛', '④ 3-scene rematch')}</b>${L('换 3 个从未用过的场景再比，9 场合计仍满足 ③ 才上位', 'Three unused scenes; promoted only if all 9 together still satisfy ③')}</div></div>
+      <p class="note" style="margin-top:6px">${L('为什么要这么严：在 ±1.5 的运气波动下，只看平均分很容易选到"运气好"的程序。例如第 7 轮平均分比冠军还高，但逐场比有输有赢，所以不收。', 'Why so strict: with ±1.5 of luck, picking by average alone often selects a lucky program. Round 7 averaged higher than the champion but won some scenes and lost others, so it was not adopted.')}</p>`;
+      const evalP3 = `<p>${L('对照组（宽松规则）：只比 3 个场景，平均领先 0.5 分、单场不输超过 0.75 分就上位，没有加赛。', 'Control arm (lenient rule): 3 scenes only; promoted on a 0.5 average lead with no scene lost by more than 0.75; no rematch.')}</p><div class="pipe">
         <div><b>${L('① 快速初筛', '① Quick screen')}</b>${L('先跑 5 秒，明显变差的淘汰', 'Run 5 s; drop clearly worse programs')}</div>
-        <div><b>${L('② 3 个条件对比', '② 3 conditions')}</b>${L('平均领先冠军 0.5，单局不输 0.75 以上', 'Lead the champion by 0.5 on average, never lose by more than 0.75')}</div>
-        <div><b>${L('最后：封存测试', 'Finally: sealed test')}</b>ξ<sub>7</sub>, ξ<sub>8</sub></div></div>
-        <p class="note" style="margin-top:6px">${L('结果：在 ±1.5 的混沌噪声下，这条规则容易被运气骗过，最终冠军在封存条件上只有 +0.1。这正是要用严格裁决的原因。', 'Result: under ±1.5 chaotic noise this rule is easily fooled by luck; its final champion scores only +0.1 on the sealed test. That is why the strict verdict matters.')}</p>`;
+        <div><b>${L('② 3 场对比', '② 3 scenes')}</b>${L('平均领先冠军 0.5，单场不输 0.75 以上', 'Lead the champion by 0.5 on average, never lose by more than 0.75')}</div>
+        <div><b>${L('最后：封存考题', 'Finally: sealed tests')}</b>${L('2 个从未给模型看过的场景', '2 scenes never shown to the model')}</div></div>
+        <p class="note" style="margin-top:6px">${L('结果：在 ±1.5 的运气波动下，这条规则很容易被运气骗过，最终冠军在封存考题上只有 +0.1。这正是要用严格裁决的原因。', 'Result: under ±1.5 of luck this rule is easily fooled; its final champion scores only +0.1 on the sealed tests. That is why the strict verdict matters.')}</p>`;
 
       const search = `<p>${L('模型写的是受限 Python 语句块，每个控制步执行一次。', 'The model writes a restricted Python block executed once per control step.')}</p>
       <dl class="facts">
@@ -68,8 +70,8 @@
         <dt>${L('允许', 'Allowed')}</dt><dd>${L('四则、比较、if、for≤128、min/max/sin/exp…', 'arithmetic, if, for ≤ 128, min/max/sin/exp…')}</dd>
         <dt>${L('禁止', 'Forbidden')}</dt><dd>${L('import、函数定义、随机、文件、网络', 'imports, defs, randomness, files, network')}</dd>
         <dt>${L('父代', 'Parent')}</dt><dd>${L('冠军与存档精英交替', 'champion and archive elites alternate')}</dd>
-        <dt>${L('探索', 'Explore')}</dt><dd>${L('每 2 轮随机指定一个未探索行为格', 'every 2nd round a random unexplored cell')}</dd>
-        <dt>${L('存档', 'Archive')}</dt><dd>MAP-Elites：${L('动作幅度 × 偏向 × 时相', 'actuation × bias × phase')}</dd>
+        <dt>${L('探索', 'Explore')}</dt><dd>${L('每 2 轮随机要求尝试一种没试过的操作风格', 'every 2nd round: try a random untried style')}</dd>
+        <dt>${L('存档', 'Archive')}</dt><dd>${L('按风格分格保存最佳程序（动作大小 × 偏向哪口 × 何时动作）', 'best program per style (how much × which inlet × when)')}</dd>
         <dt>${L('记忆', 'Memory')}</dt><dd>${L('模型自写笔记本 ≤ 6000 字符', 'self-written notebook ≤ 6000 chars')}</dd>
         <dt>${L('先验', 'Priors')}</dt><dd>${L('无。提示词不含任何控制提示', 'none; the prompt contains no control hints')}</dd>
       </dl>`;
