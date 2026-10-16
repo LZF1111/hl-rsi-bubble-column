@@ -44,15 +44,16 @@
     const sx = v => m.l + (v - x0) / (x1 - x0) * (W - m.l - m.r);
     const sy = v => H - m.b - (v - y0) / (y1 - y0) * (H - m.t - m.b);
     const g = el('g', {}, svg);
+    const gridc = opts.dark ? 'rgba(255,255,255,.08)' : '#ececf0', tc = opts.dark ? '#86868b' : '#86868b';
     for (const v of ticks(y0, y1, opts.yt || 5)) {
-      el('line', { x1: m.l, x2: W - m.r, y1: sy(v), y2: sy(v), stroke: '#ececf0' }, g);
-      text(g, m.l - 6, sy(v) + 4, opts.yfmt ? opts.yfmt(v) : fmt(v), { 'text-anchor': 'end' });
+      el('line', { x1: m.l, x2: W - m.r, y1: sy(v), y2: sy(v), stroke: gridc }, g);
+      text(g, m.l - 8, sy(v) + 4, opts.yfmt ? opts.yfmt(v) : fmt(v), { 'text-anchor': 'end', fill: tc });
     }
-    for (const v of ticks(x0, x1, opts.xt || 6)) text(g, sx(v), H - m.b + 16, opts.xfmt ? opts.xfmt(v) : fmt(v), { 'text-anchor': 'middle' });
-    if (opts.zero && y0 < 0 && y1 > 0) el('line', { x1: m.l, x2: W - m.r, y1: sy(0), y2: sy(0), stroke: '#a1a1a6', 'stroke-dasharray': '3 3' }, g);
-    if (opts.xlabel) text(g, (m.l + W - m.r) / 2, H - 4, opts.xlabel, { 'text-anchor': 'middle', 'font-size': 12 });
-    if (opts.ylabel) text(g, 12, (m.t + H - m.b) / 2, opts.ylabel, { 'text-anchor': 'middle', 'font-size': 12, transform: `rotate(-90 12 ${(m.t + H - m.b) / 2})` });
-    return { svg, sx, sy, W, H, m, y0, y1, g: el('g', {}, svg) };
+    for (const v of ticks(x0, x1, opts.xt || 6)) text(g, sx(v), H - m.b + 17, opts.xfmt ? opts.xfmt(v) : fmt(v), { 'text-anchor': 'middle', fill: tc });
+    if (opts.zero && y0 < 0 && y1 > 0) el('line', { x1: m.l, x2: W - m.r, y1: sy(0), y2: sy(0), stroke: opts.dark ? 'rgba(255,255,255,.35)' : '#a1a1a6', 'stroke-dasharray': '3 3' }, g);
+    if (opts.xlabel) text(g, (m.l + W - m.r) / 2, H - 3, opts.xlabel, { 'text-anchor': 'middle', 'font-size': 12, fill: tc });
+    if (opts.ylabel) text(g, 11, (m.t + H - m.b) / 2, opts.ylabel, { 'text-anchor': 'middle', 'font-size': 12, fill: tc, transform: `rotate(-90 11 ${(m.t + H - m.b) / 2})` });
+    return { svg, sx, sy, W, H, m, y0, y1, dark: !!opts.dark, g: el('g', {}, svg) };
   }
 
   function path(f, pts, attrs) {
@@ -68,7 +69,9 @@
       if (s.area) {
         const pts = s.pts; const base = f.sy(Math.min(Math.max(0, f.y0), f.y1));
         const d = 'M' + f.sx(pts[0][0]) + ',' + base + pts.map(p => 'L' + f.sx(p[0]) + ',' + f.sy(p[1])).join('') + 'L' + f.sx(pts[pts.length - 1][0]) + ',' + base + 'Z';
-        el('path', { d, fill: s.color, opacity: 0.12 }, f.g);
+        const id = 'ag' + Math.random().toString(36).slice(2, 8), defs = el('defs', {}, f.svg), lg = el('linearGradient', { id, x1: 0, y1: 0, x2: 0, y2: 1 }, defs);
+        el('stop', { offset: 0, 'stop-color': s.color, 'stop-opacity': 0.22 }, lg); el('stop', { offset: 1, 'stop-color': s.color, 'stop-opacity': 0.02 }, lg);
+        el('path', { d, fill: `url(#${id})` }, f.g);
       }
       const p = path(f, s.pts, { stroke: s.color, 'stroke-width': s.width || 2, 'stroke-dasharray': s.dash || '', opacity: s.opacity || 1 });
       if (s.anim) { const L = p.getTotalLength ? 2000 : 0; p.style.strokeDasharray = L; p.style.strokeDashoffset = L; p.style.transition = 'stroke-dashoffset 1.4s ease'; requestAnimationFrame(() => requestAnimationFrame(() => { p.style.strokeDashoffset = 0; })); }
@@ -111,7 +114,7 @@
         r.addEventListener('mousemove', e => showTip(e, `${g.label}<br>${v.name || ''} <b>${(+v.v).toFixed(3)}</b>`));
         r.addEventListener('mouseleave', hideTip);
       });
-      text(f.g, f.sx(i) + gw / 2, f.H - f.m.b + 16, g.label, { 'text-anchor': 'middle', 'font-size': 11 });
+      text(f.g, f.sx(i) + gw / 2, f.H - f.m.b + 17, g.label, { 'text-anchor': 'middle', 'font-size': 11, fill: '#86868b' });
     });
     return f;
   }
@@ -119,7 +122,7 @@
   /* points: [{x,y,color,r,html,onclick,ring}] */
   function scatter(f, points) {
     for (const p of points) {
-      const c = el('circle', { cx: f.sx(p.x), cy: f.sy(p.y), r: p.r || 5, fill: p.color, stroke: p.ring ? '#1d1d1f' : '#fff', 'stroke-width': p.ring ? 2.5 : 1.5, style: p.onclick ? 'cursor:pointer' : '' }, f.svg);
+      const c = el('circle', { cx: f.sx(p.x), cy: f.sy(p.y), r: p.r || 5, fill: p.color, stroke: p.ring ? (f.dark ? '#f5f5f7' : '#1d1d1f') : (f.dark ? '#000' : '#fff'), 'stroke-width': p.ring ? 2 : 1.5, style: p.onclick ? 'cursor:pointer' : '' }, f.svg);
       if (p.html) { c.addEventListener('mousemove', e => showTip(e, p.html)); c.addEventListener('mouseleave', hideTip); }
       if (p.onclick) c.addEventListener('click', p.onclick);
     }

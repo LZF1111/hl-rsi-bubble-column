@@ -1,90 +1,67 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="lang-zh">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>HL · RSI — 语言模型自我改进的鼓泡塔控制</title>
-<meta name="description" content="启发式学习（HL）：语言模型写控制程序、真实 CFD 裁决、自维护笔记本递归改进。与 SAC 在混沌鼓泡塔上的对照。">
-<link rel="stylesheet" href="style.css">
+<title>FlowEvolve · 多相流模拟控制自进化系统</title>
+<meta name="description" content="FlowEvolve：大语言模型写控制程序，真实 CFD 裁决，系统递归自我改进。Control laws reasoned out of multiphase-flow simulation.">
+<link rel="stylesheet" href="css/base.css?v=20261016e">
+<link rel="stylesheet" href="css/landing.css?v=20261016e">
 </head>
 <body>
-<nav class="globalnav" aria-label="全局导航">
-  <div class="gn-inner">
-    <a class="gn-logo" href="#top">HL<span>·</span>RSI</a>
-    <a href="#overview">概览</a>
-    <a href="#console">控制台</a>
-    <a href="#loop">进化回路</a>
-    <a href="https://github.com/LZF1111/hl-rsi-bubble-column" target="_blank" rel="noopener">GitHub</a>
+<nav class="nav" id="nav" aria-label="Global">
+  <div class="nav-in">
+    <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"></span>FlowEvolve</a>
+    <a class="hide-s" href="#how"><span class="zh">原理</span><span class="en">How it works</span></a>
+    <a class="hide-s" href="#evolution"><span class="zh">进化</span><span class="en">Evolution</span></a>
+    <a class="hide-s" href="#results"><span class="zh">结果</span><span class="en">Results</span></a>
+    <a class="hide-s" href="https://github.com/LZF1111/hl-rsi-bubble-column" target="_blank" rel="noopener">GitHub</a>
+    <span id="langNav"></span>
+    <a class="btn-s" href="console.html"><span class="zh">打开控制台</span><span class="en">Open console</span></a>
   </div>
 </nav>
 
 <header class="hero" id="top">
-  <p class="eyebrow">Heuristic Learning · Recursive Self-Improvement</p>
-  <h1>让语言模型<br>自己写控制器。</h1>
-  <p class="lead">一座混沌的鼓泡塔，三个底部入口。语言模型写程序，CFD 执行，评估器裁决，笔记本记账，下一轮读账再改。</p>
-  <div class="cta">
-    <a class="btn primary" href="#console">进入控制台</a>
-    <a class="btn link" href="#loop">看它如何进化 ›</a>
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow"><span class="zh">多相流模拟控制自进化系统</span><span class="en">Self-evolving multiphase-flow control</span></p>
+      <h1 class="display"><span class="zh">控制律，<br>由模拟推演而出。</span><span class="en">Control laws,<br>reasoned out of simulation.</span></h1>
+      <p class="lead"><span class="zh">大语言模型写控制程序，真实 CFD 逐轮裁决，系统把每次实验写进自己的笔记本，下一轮读完再改。没有梯度，没有人工调参。</span><span class="en">A language model writes the control program, real CFD judges every round, and the system records each experiment in its own notebook before rewriting the next one. No gradients. No hand tuning.</span></p>
+      <div class="ctas">
+        <a class="btn primary" href="console.html"><span class="zh">进入控制台</span><span class="en">Enter the console</span></a>
+        <a class="btn ghost" href="#how"><span class="zh">了解原理 ›</span><span class="en">See how it works ›</span></a>
+      </div>
+      <div class="hero-meta">
+        <div><b>+2.61</b><span><span class="zh">留出条件回报提升</span><span class="en">held-out return gain</span></span></div>
+        <div><b>3.7×</b><span><span class="zh">CFD 用量低于 SAC（5.4 万 vs 20 万段）</span><span class="en">less CFD than SAC (54k vs 200k segments)</span></span></div>
+        <div><b>3</b><span><span class="zh">行可审查的控制代码</span><span class="en">auditable lines of code</span></span></div>
+      </div>
+    </div>
+    <figure class="hero-figure">
+      <div>
+        <div class="col-frame hero-col"><canvas id="heroA" aria-label="equal flow CFD"></canvas><span class="col-tag">t = <b id="heroT">0.0</b> s</span></div>
+        <p class="col-cap"><span class="zh">均匀布气</span><span class="en">Equal flow</span></p>
+      </div>
+      <div>
+        <div class="col-frame hero-col"><canvas id="heroB" aria-label="evolved controller CFD"></canvas></div>
+        <p class="col-cap"><span class="zh">进化后的程序</span><span class="en">Evolved program</span></p>
+      </div>
+      <div class="hero-side">
+        <div id="heroCbar"></div>
+        <p class="hero-note"><span class="zh">OpenFOAM 双欧拉计算，中截面气相体积分数 α<sub>air</sub>（滑动 2 s 平均）。留出条件 ξ<sub>7</sub>，学习中从未出现。</span><span class="en">OpenFOAM Euler–Euler run, mid-plane gas volume fraction α<sub>air</sub> (2 s moving average). Held-out condition ξ<sub>7</sub>, never seen during learning.</span></p>
+        <div class="hero-i"><span class="muted"><span class="zh">不均匀度 I</span><span class="en">Imbalance I</span></span><span><b id="heroIa">—</b> → <b id="heroIb" class="accent">—</b></span></div>
+      </div>
+    </figure>
   </div>
-  <div class="hero-visual" id="heroColumn" aria-hidden="true"></div>
 </header>
-
-<section class="stats" id="overview" aria-label="关键数字">
-  <div class="stat"><b id="kRounds">—</b><span>LLM 进化轮次（4 次无先验运行）</span></div>
-  <div class="stat"><b id="kSegments">—</b><span>真实 CFD 段（每段 0.1 s 物理时间）</span></div>
-  <div class="stat"><b id="kBest">—</b><span>最优冠军留出测试平均增益</span></div>
-  <div class="stat"><b>3.9 s⁻¹</b><span>有限时间 Lyapunov 指数，0.26 s 即"忘记"初态</span></div>
-</section>
-
-<section class="loop" id="loop">
-  <h2>每一轮，系统都在改写自己。</h2>
-  <p class="sub">HL 学的不是网络权重，而是一段可读的程序和一本自己写的实验笔记。</p>
-  <ol class="loop-ring" id="loopRing">
-    <li><i>01</i><b>读账</b><span>笔记本 + 冠军源码 + 轨迹 + 实验表 + MAP-Elites 存档</span></li>
-    <li><i>02</i><b>写程序</b><span>LLM 返回 source / rationale / notes</span></li>
-    <li><i>03</i><b>CFD 执行</b><span>twoPhaseEulerFoam，6 个开发条件并行</span></li>
-    <li><i>04</i><b>裁决</b><span>50 步初筛 → 配对 t 检验 → 3 个确认条件</span></li>
-    <li><i>05</i><b>记账</b><span>增益、行为格、轨迹写回学习状态 𝒮</span></li>
-  </ol>
-</section>
-
-<section class="console" id="console">
-  <aside class="sidebar" aria-label="功能栏">
-    <div class="sb-group">
-      <h3>任务</h3>
-      <button data-view="goal" class="active">控制目标 · 鼓泡塔</button>
-      <button data-view="strategy">可选控制策略</button>
-      <button data-view="range">控制范围与约束</button>
-      <button data-view="reward">奖励函数</button>
-      <button data-view="evaluator">评估器</button>
-      <button data-view="prompt">提示词</button>
-    </div>
-    <div class="sb-group">
-      <h3>运行</h3>
-      <div id="runList" class="run-list"></div>
-    </div>
-    <div class="sb-group">
-      <h3>结果</h3>
-      <button data-view="evolution">进化总览</button>
-      <button data-view="round">轮次详情</button>
-      <button data-view="archive">行为存档</button>
-      <button data-view="compare">HL 与 SAC</button>
-      <button data-view="mechanism">学到了什么</button>
-    </div>
-  </aside>
-  <main class="stage" id="stage" tabindex="-1" aria-live="polite"></main>
-</section>
-
-<footer class="foot">
-  <p>数据全部来自真实 OpenFOAM v2306 运行导出（state.json / events.jsonl / final_test.json）。LLM 原文保留英文。留出条件 ξ₇、ξ₈ 在学习中从未展示给模型。</p>
-  <p>同一几何、网格与工况下的扰动条件；不代表跨工况验证。</p>
-</footer>
-
-<script src="js/charts.js"></script>
-<script src="js/views.js"></script>
-<script src="js/results.js"></script>
-<script src="js/round.js"></script>
-<script src="js/compare.js"></script>
-<script src="js/app.js"></script>
+<main id="landing"></main>
+<footer class="foot"><div class="wrap" id="foot"></div></footer>
+<script src="js/i18n.js?v=20261016e"></script>
+<script src="js/charts.js?v=20261016e"></script>
+<script src="js/cfd.js?v=20261016e"></script>
+<script src="js/data.js?v=20261016e"></script>
+<script src="js/landing-a.js?v=20261016e"></script>
+<script src="js/landing-b.js?v=20261016e"></script>
+<script src="js/landing.js?v=20261016e"></script>
 </body>
 </html>

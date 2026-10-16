@@ -6,3 +6,6 @@ _shot*.png
 /results/
 *.key
 .env
+/_fields_raw.json
+/_rounds_raw/
+*.tmp
