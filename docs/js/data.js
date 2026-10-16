@@ -114,7 +114,7 @@
     return th;
   }
 
-  /* field shown at frame k: 'live' = 1.2 s moving average (motion visible, bubbles blurred); 'mean' = time-mean from 3 s */
+  /* field at frame k: 'mean' = running mean from 3 s (settles into the distribution); 'live' = 1.2 s moving average */
   function frameAt(E, k, mode) {
     if (mode === 'mean') return CFD.cumMean(E.a, E.t, k);
     const dt = E.t.length > 1 ? E.t[1] - E.t[0] : 0.2;
@@ -134,8 +134,8 @@
   /* episode player: play/pause, scrubber, live vs time-mean toggle, autoplay while on screen */
   function player(el, o) {
     const n = o.n, reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let mode = o.mode || 'live', timer = 0, auto = o.auto !== false && !reduce, visible = false, wait = 0;
-    el.innerHTML = `<div class="pl"><button class="play" aria-label="play / pause">▶</button><input type="range" min="0" max="${n - 1}" value="${auto ? 0 : n - 1}" aria-label="time"><span class="num pl-t"></span><span class="seg" role="group" aria-label="view">${[['live', '动态过程', 'Live'], ['mean', '时间平均', 'Time-mean']].map(([m, z, e]) => `<button data-m="${m}" aria-pressed="${m === mode}">${L(z, e)}</button>`).join('')}</span></div>`;
+    let mode = o.mode || 'mean', timer = 0, auto = o.auto !== false && !reduce, visible = false, wait = 0;
+    el.innerHTML = `<div class="pl"><button class="play" aria-label="play / pause">▶</button><input type="range" min="0" max="${n - 1}" value="${auto ? 0 : n - 1}" aria-label="time"><span class="num pl-t"></span><span class="seg" role="group" aria-label="view">${[['mean', '累积平均', 'Running mean'], ['live', '瞬时流动', 'Instantaneous']].map(([m, z, e]) => `<button data-m="${m}" aria-pressed="${m === mode}">${L(z, e)}</button>`).join('')}</span></div>`;
     const sl = el.querySelector('input'), btn = el.querySelector('.play'), tl = el.querySelector('.pl-t');
     const draw = () => { const k = +sl.value; tl.textContent = `t = ${o.t[k].toFixed(1)} s`; o.draw(k, mode); };
     const stop = () => { clearInterval(timer); clearTimeout(wait); timer = 0; btn.textContent = '▶'; };

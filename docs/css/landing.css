@@ -210,3 +210,6 @@
 .hero-fig { padding-top: 12px; }
 .hero { padding-bottom: 0; }
 @media (max-width: 720px) { .hero-fig .vs .col-frame { height: 280px; } }
+
+.hero-cap { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+.hero-cap .seg button { font-size: 12px; padding: 4px 10px; }

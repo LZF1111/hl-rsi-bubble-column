@@ -41,7 +41,7 @@
     }
     return a;
   }
-  const DEV_RANGE = 0.02;
+  const DEV_RANGE = 0.012;
   // time-mean from t0 (default 3 s, after the column has filled) up to frame k; short window before t0
   function cumMean(fr, t, k, t0) {
     t0 = t0 == null ? 3 : t0;

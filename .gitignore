@@ -9,3 +9,5 @@ _shot*.png
 /_fields_raw.json
 /_rounds_raw/
 *.tmp
+
+_fields_best_raw.json

@@ -14,7 +14,7 @@
   window.LANDING_SECTIONS = () => `
 <section class="sec tight">
   <div class="wrap grid g4 stats-dark">
-    <div class="reveal"><b>−28%</b><span>${L('气体分布不均匀程度（在从未给模型看过的封存考题上）', 'gas-distribution unevenness, on a sealed test the model never saw')}</span></div>
+    <div class="reveal"><b>−31%</b><span>${L('气体分布不均匀程度（最强程序，两个从未给模型看过的封存考题平均）', 'gas-distribution unevenness (best program, mean of two sealed tests the model never saw)')}</span></div>
     <div class="reveal"><b>6</b><span>${L('轮就找到冠军；之后 30 个挑战者没有一个能稳定赢它', 'rounds to the champion; none of the next 30 challengers beat it reliably')}</span></div>
     <div class="reveal"><b>3.7×</b><span>${L('比深度强化学习 SAC 少用的 CFD 计算', 'less CFD compute than deep RL (SAC)')}</span></div>
     <div class="reveal"><b>3</b><span>${L('行可读代码：最终控制器全部内容', 'readable lines: the entire final controller')}</span></div>

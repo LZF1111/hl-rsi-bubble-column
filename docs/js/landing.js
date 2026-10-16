@@ -12,25 +12,34 @@
   const runMeanI = (I, k) => { const s = 27, e = Math.max(s, Math.min(I.length - 1, k)); let m = 0; for (let i = s; i <= e; i++) m += I[i]; return m / (e - s + 1); };
 
   /* hero: real held-out CFD, equal flow vs champion; deviation from the lateral mean, time-mean from 3 s */
-  Promise.all([D.getJSON('data/fields/fixed.json'), D.getJSON(`data/fields/${RUN}.json`)]).then(([fx, hl]) => {
-    const A = D.episode(fx.episodes.fixed_s7, fx), B = D.episode(hl.episodes.learned_s7, hl);
+  Promise.all([D.getJSON('data/fields/fixed.json'), D.getJSON('data/fields/best.json')]).then(([fx, hl]) => {
     const lab = L('到此刻累计扣分（越少越好）', 'Penalty so far (lower is better)');
     document.getElementById('heroVs').innerHTML = D.vsPanel('hA', L('均匀布气', 'Equal flow'), L('三口都是 30 mm/s', '30 mm/s at every inlet'), lab)
-      + D.vsPanel('hB', L('FlowEvolve 冠军', 'FlowEvolve champion'), L('第 6 轮自己进化出的 3 行程序', 'a 3-line program it evolved in round 6'), lab, true);
+      + D.vsPanel('hB', L('FlowEvolve 最强程序', 'FlowEvolve best program'), L('读压力、自动调节的反馈控制器', 'a feedback controller that reads pressure'), lab, true);
     Lang.bind(document.getElementById('heroVs'));
     const o = { nx: fx.nx, ny: fx.ny, guide: true };
     const va = new CFD.FieldView(document.getElementById('hAC'), o), vb = new CFD.FieldView(document.getElementById('hBC'), o);
     document.getElementById('heroCbar').innerHTML = CFD.colorbar('dev', Lt('比同高度平均', 'vs. same-height average'));
-    const pa = D.cumPenalty(A.reward), pb = D.cumPenalty(B.reward);
-    const f = C.lines(document.getElementById('heroEp'), [
-      { name: Lt('均匀布气', 'Equal flow'), color: '#8e8e93', pts: pa, width: 2.5 },
-      { name: Lt('冠军', 'Champion'), color: '#0066cc', pts: pb, width: 3, area: true }],
-      { h: 170, x: [0, 20.3], y: [0, 15.5], xlabel: Lt('回合内时间 (s)', 'Time in the episode (s)'), ylabel: Lt('累计扣分', 'Penalty'), xname: 't', digits: 2, margin: { l: 40, b: 32, t: 8, r: 70 } });
-    const tA = pa[pa.length - 1][1], tB = pb[pb.length - 1][1];
-    C.text(f.g, f.sx(20.2) + 4, f.sy(tA) + 4, tA.toFixed(1), { 'font-size': 12, fill: '#6e6e73', 'font-weight': 600 });
-    C.text(f.g, f.sx(20.2) + 4, f.sy(tB) + 4, `${tB.toFixed(1)}  −${Math.round(100 * (1 - tB / tA))}%`, { 'font-size': 12, fill: '#0066cc', 'font-weight': 700 });
-    const guide = C.el('line', { y1: f.m.t, y2: f.H - f.m.b, stroke: '#1d1d1f', 'stroke-width': 1, opacity: 0.4 }, f.svg);
-    D.player(document.getElementById('heroPl'), { watch: document.getElementById('heroVs'), n: A.t.length, t: A.t, fps: 7, draw: (k, mode) => {
+    const tabs = document.getElementById('heroTabs');
+    let pl, f, guide, A, B, pa, pb;
+    const show = s => {
+      A = D.episode(fx.episodes['fixed_s' + s], fx); B = D.episode(hl.episodes['learned_s' + s], hl);
+      pa = D.cumPenalty(A.reward); pb = D.cumPenalty(B.reward);
+      f = C.lines(document.getElementById('heroEp'), [
+        { name: Lt('均匀布气', 'Equal flow'), color: '#8e8e93', pts: pa, width: 2.5 },
+        { name: Lt('最强程序', 'Best program'), color: '#0066cc', pts: pb, width: 3, area: true }],
+        { h: 170, x: [0, 20.3], y: [0, 15.5], xlabel: Lt('回合内时间 (s)', 'Time in the episode (s)'), ylabel: Lt('累计扣分', 'Penalty'), xname: 't', digits: 2, margin: { l: 40, b: 32, t: 8, r: 70 } });
+      const tA = pa[pa.length - 1][1], tB = pb[pb.length - 1][1];
+      C.text(f.g, f.sx(20.2) + 4, f.sy(tA) + 4, tA.toFixed(1), { 'font-size': 12, fill: '#6e6e73', 'font-weight': 600 });
+      C.text(f.g, f.sx(20.2) + 4, f.sy(tB) + 4, `${tB.toFixed(1)}  −${Math.round(100 * (1 - tB / tA))}%`, { 'font-size': 12, fill: '#0066cc', 'font-weight': 700 });
+      guide = C.el('line', { y1: f.m.t, y2: f.H - f.m.b, stroke: '#1d1d1f', 'stroke-width': 1, opacity: 0.4 }, f.svg);
+      tabs.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === s));
+      if (pl) pl.draw();
+    };
+    tabs.innerHTML = ['7', '8'].map(s => `<button data-s="${s}">${D.scene(+s)}</button>`).join('');
+    tabs.querySelectorAll('button').forEach(b => b.onclick = () => show(b.dataset.s));
+    show('7');
+    pl = D.player(document.getElementById('heroPl'), { watch: document.getElementById('heroVs'), n: A.t.length, t: A.t, fps: 7, draw: (k, mode) => {
       const t = A.t[k];
       D.vsFill('hA', va, D.frameAt(A, k, mode), A.ux[k], A.uy[k], D.inletAt(A.velocities, t), fx.nx, fx.ny, D.cumAt(pa, t).toFixed(2));
       D.vsFill('hB', vb, D.frameAt(B, k, mode), B.ux[k], B.uy[k], D.inletAt(B.velocities, t), fx.nx, fx.ny, D.cumAt(pb, t).toFixed(2));
