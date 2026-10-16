@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FlowEvolve · 多相流模拟控制自进化系统</title>
 <meta name="description" content="FlowEvolve：大语言模型写控制程序，真实 CFD 裁决，系统递归自我改进。Control laws reasoned out of multiphase-flow simulation.">
-<link rel="stylesheet" href="css/base.css?v=20261016e">
-<link rel="stylesheet" href="css/landing.css?v=20261016e">
+<link rel="stylesheet" href="css/base.css?v=20261016j">
+<link rel="stylesheet" href="css/landing.css?v=20261016j">
 </head>
 <body>
 <nav class="nav" id="nav" aria-label="Global">
@@ -26,7 +26,7 @@
     <div>
       <p class="eyebrow"><span class="zh">多相流模拟控制自进化系统</span><span class="en">Self-evolving multiphase-flow control</span></p>
       <h1 class="display"><span class="zh">控制律，<br>由模拟推演而出。</span><span class="en">Control laws,<br>reasoned out of simulation.</span></h1>
-      <p class="lead"><span class="zh">大语言模型写控制程序，真实 CFD 逐轮裁决，系统把每次实验写进自己的笔记本，下一轮读完再改。没有梯度，没有人工调参。</span><span class="en">A language model writes the control program, real CFD judges every round, and the system records each experiment in its own notebook before rewriting the next one. No gradients. No hand tuning.</span></p>
+      <p class="lead"><span class="zh">只调三个进气口的气速，让鼓泡塔里的气体分布更均匀。大语言模型写控制程序，真实 CFD 逐轮打分，统计检验决定是否采纳。没有梯度，没有人工调参。</span><span class="en">Tune only the gas velocity of three inlets to spread the gas evenly through a bubble column. A language model writes the control program, real CFD scores every round, and a statistical test decides what to keep. No gradients. No hand tuning.</span></p>
       <div class="ctas">
         <a class="btn primary" href="console.html"><span class="zh">进入控制台</span><span class="en">Enter the console</span></a>
         <a class="btn ghost" href="#how"><span class="zh">了解原理 ›</span><span class="en">See how it works ›</span></a>
@@ -37,31 +37,23 @@
         <div><b>3</b><span><span class="zh">行可审查的控制代码</span><span class="en">auditable lines of code</span></span></div>
       </div>
     </div>
-    <figure class="hero-figure">
-      <div>
-        <div class="col-frame hero-col"><canvas id="heroA" aria-label="equal flow CFD"></canvas><span class="col-tag">t = <b id="heroT">0.0</b> s</span></div>
-        <p class="col-cap"><span class="zh">均匀布气</span><span class="en">Equal flow</span></p>
-      </div>
-      <div>
-        <div class="col-frame hero-col"><canvas id="heroB" aria-label="evolved controller CFD"></canvas></div>
-        <p class="col-cap"><span class="zh">进化后的程序</span><span class="en">Evolved program</span></p>
-      </div>
-      <div class="hero-side">
+    <figure class="hero-fig">
+      <div class="vs" id="heroVs"></div>
+      <div class="hero-foot">
         <div id="heroCbar"></div>
-        <p class="hero-note"><span class="zh">OpenFOAM 双欧拉计算，中截面气相体积分数 α<sub>air</sub>（滑动 2 s 平均）。留出条件 ξ<sub>7</sub>，学习中从未出现。</span><span class="en">OpenFOAM Euler–Euler run, mid-plane gas volume fraction α<sub>air</sub> (2 s moving average). Held-out condition ξ<sub>7</sub>, never seen during learning.</span></p>
-        <div class="hero-i"><span class="muted"><span class="zh">不均匀度 I</span><span class="en">Imbalance I</span></span><span><b id="heroIa">—</b> → <b id="heroIb" class="accent">—</b></span></div>
+        <p class="hero-note"><span class="zh">真实 OpenFOAM 双欧拉计算，留出条件 ξ<sub>7</sub>（学习中从未出现），3–20 s 时均场。颜色是同一高度上气含率相对横向平均的偏差：红 = 气多，蓝 = 气少，白 = 均匀。</span><span class="en">Real OpenFOAM Euler–Euler run on held-out condition ξ<sub>7</sub> (never seen in learning), time-mean over 3–20 s. Colour shows the gas fraction relative to the lateral mean at each height: red = more gas, blue = less, white = even.</span></p>
       </div>
     </figure>
   </div>
 </header>
 <main id="landing"></main>
 <footer class="foot"><div class="wrap" id="foot"></div></footer>
-<script src="js/i18n.js?v=20261016e"></script>
-<script src="js/charts.js?v=20261016e"></script>
-<script src="js/cfd.js?v=20261016e"></script>
-<script src="js/data.js?v=20261016e"></script>
-<script src="js/landing-a.js?v=20261016e"></script>
-<script src="js/landing-b.js?v=20261016e"></script>
-<script src="js/landing.js?v=20261016e"></script>
+<script src="js/i18n.js?v=20261016j"></script>
+<script src="js/charts.js?v=20261016j"></script>
+<script src="js/cfd.js?v=20261016j"></script>
+<script src="js/data.js?v=20261016j"></script>
+<script src="js/landing-a.js?v=20261016j"></script>
+<script src="js/landing-b.js?v=20261016j"></script>
+<script src="js/landing.js?v=20261016j"></script>
 </body>
 </html>

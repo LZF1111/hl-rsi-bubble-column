@@ -69,5 +69,48 @@
     }).join('\n');
   }
 
-  window.D = { getJSON, RUNS, esc, f2, cls, episode, inletAt, rounds, roundEpisode, annotate, reveal, highlight, diff };
+  /* plain-language signature of a program from its logged condition-0 inlet trace */
+  const EQUAL = { split: [30, 30, 30], onset: null, fb: false, lines: 1 };
+  function sig(r) {
+    if (!r) return EQUAL;
+    const v = r.velocity_trace || [], dt = r.horizon == 50 ? 0.2 : 0.8;
+    const i = v.findIndex(u => u.some(x => Math.abs(x - 0.03) > 0.001));
+    const last = v.length ? v[v.length - 1] : [0.03, 0.03, 0.03];
+    return { split: last.map(x => Math.round(x * 1000)), onset: i < 0 ? null : +(i * dt + 0.2).toFixed(1), fb: /obs\[/.test(r.source || ''), lines: (r.source || '').trim().split('\n').length };
+  }
+  function sigText(s) {
+    return { split: s.split.join(' · '), onset: s.onset == null ? L('不动作', 'never') : `${s.onset} s`, fb: s.fb ? L('读压力反馈', 'pressure feedback') : L('定时开环', 'timed open loop'), lines: s.lines };
+  }
+  /* what changed vs what was kept, parent -> candidate */
+  function delta(p, c) {
+    const out = [], same = [];
+    const sp = p.split.join(), sc = c.split.join();
+    const dc = c.split[1] - p.split[1];
+    if (sp !== sc) out.push(L(`气速分配 ${p.split.join('/')} → <b>${c.split.join('/')}</b> mm/s（中间口 ${dc > 0 ? '+' : ''}${dc}）`, `inlet split ${p.split.join('/')} → <b>${c.split.join('/')}</b> mm/s (centre ${dc > 0 ? '+' : ''}${dc})`));
+    else same.push(L(`气速分配 ${c.split.join('/')}`, `split ${c.split.join('/')}`));
+    if (Math.abs((p.onset || 0) - (c.onset || 0)) > 0.5 || (p.onset == null) !== (c.onset == null)) out.push(L(`启动时刻 ${p.onset == null ? '无' : p.onset + ' s'} → <b>${c.onset == null ? '无' : c.onset + ' s'}</b>`, `onset ${p.onset == null ? 'none' : p.onset + ' s'} → <b>${c.onset == null ? 'none' : c.onset + ' s'}</b>`));
+    else if (c.onset != null) same.push(L(`启动时刻 ${c.onset} s`, `onset ${c.onset} s`));
+    if (p.fb !== c.fb) out.push(c.fb ? L('<b>加入压力反馈</b>', '<b>added pressure feedback</b>') : L('<b>去掉反馈</b>，改为定时', '<b>dropped feedback</b>, timed only'));
+    else same.push(c.fb ? L('压力反馈结构', 'feedback structure') : L('开环定时结构', 'open-loop timing'));
+    return { changed: out, kept: same };
+  }
+
+  /* one side of a side-by-side CFD comparison */
+  function vsPanel(id, title, sub, scoreLabel, win) {
+    return `<div class="vs-col${win ? ' win' : ''}"><div class="vs-h"><b>${title}</b><span>${sub || ''}</span></div>
+      <div class="col-frame"><canvas id="${id}C"></canvas></div>
+      <div class="vs-k">${L('入口气速 mm/s', 'Inlet gas velocity, mm/s')}</div><div id="${id}U"></div>
+      <div class="vs-k">${L('评分窗三段气含率 %', 'Gas fraction in the three thirds, %')}</div><div id="${id}T"></div>
+      <div class="vs-score"><span>${scoreLabel || L('不均匀度 I', 'Imbalance I')}</span><b id="${id}S">—</b></div></div>`;
+  }
+  function vsFill(id, view, a, ux, uy, u, nx, ny, score) {
+    view.set(a, ux, uy, u);
+    const th = CFD.thirds(a, nx, ny);
+    document.getElementById(id + 'U').innerHTML = CFD.inlets(u);
+    document.getElementById(id + 'T').innerHTML = CFD.thirdsHTML(th.g);
+    document.getElementById(id + 'S').textContent = score != null ? score : th.I.toFixed(3);
+    return th;
+  }
+
+  window.D = { getJSON, RUNS, esc, f2, cls, episode, inletAt, rounds, roundEpisode, annotate, reveal, highlight, diff, vsPanel, vsFill, sig, sigText, delta, EQUAL };
 })();

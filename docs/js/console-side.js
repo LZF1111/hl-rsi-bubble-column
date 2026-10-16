@@ -50,18 +50,17 @@
       </div>
       <div class="one-line">${L('一句话：<b>气在三段里分得越匀、晃得越少、阀门动得越稳，分越高。</b>均匀布气约 −12.5，最佳冠军在留出条件上提升 +2.6。', '<b>In one line: spread the gas evenly, slosh less, move the valves gently.</b> Equal flow scores about −12.5; the best champion adds +2.6 on held-out conditions.')}</div></div>`;
 
-      const evalPT = `<div class="pipe">
-        <div><b>${L('① 初筛 50 步', '① 50-step screen')}</b>${L('6 个条件平均增益 &lt; −0.5 直接淘汰', 'dropped if mean gain over 6 conditions &lt; −0.5')}</div>
-        <div><b>${L('② 开发 200 步', '② 200-step development')}</b>${L('6 个启动扰动条件，逐条件与冠军配对', '6 start-up perturbations, paired with the champion')}</div>
-        <div><b>${L('③ 配对 t 检验', '③ Paired t-test')}</b>${L('mean(d) &gt; 0.3，&gt; 2 倍标准误，且无 d &lt; −2', 'mean(d) &gt; 0.3, &gt; 2 SE, no d &lt; −2')}</div>
-        <div><b>${L('④ 新鲜确认', '④ Fresh confirmation')}</b>${L('再跑 3 个新条件，9 条件重检且确认均值 &gt; 0', '3 new conditions; re-test on all 9, confirmation mean &gt; 0')}</div>
-        <div><b>${L('⑤ 封存留出', '⑤ Sealed held-out')}</b>${L('ξ<sub>7</sub>、ξ<sub>8</sub> 从不展示给模型，只在最后打分', 'ξ<sub>7</sub>, ξ<sub>8</sub> never shown; scored once at the end')}</div></div>`;
-      const evalP3 = `<div class="pipe">
-        <div><b>${L('① 初筛 50 步', '① 50-step screen')}</b>${L('平均增益 &lt; −0.5 淘汰', 'dropped if mean gain &lt; −0.5')}</div>
-        <div><b>${L('② 开发 200 步', '② 200-step development')}</b>${L('仅 3 个条件', 'only 3 conditions')}</div>
-        <div><b>${L('③ 阈值晋升', '③ Threshold promotion')}</b>${L('平均超出冠军 0.5，单条件不差于 0.75', 'beat champion by 0.5 on average, no condition worse by 0.75')}</div>
-        <div><b>${L('④ 封存留出', '④ Sealed held-out')}</b>${L('ξ<sub>7</sub>、ξ<sub>8</sub>', 'ξ<sub>7</sub>, ξ<sub>8</sub>')}</div></div>
-        <p class="note" style="margin-top:6px">${L('对照组：3 条件阈值规则在 ±1.5 的混沌噪声下容易被运气骗过，留出增益仅 +0.1。', 'Control arm: a 3-condition threshold is easily fooled by ±1.5 chaotic noise; held-out gain only +0.1.')}</p>`;
+      const evalPT = `<p>${L('流动是混沌的：同一个程序换一个极小的启动扰动，分数就会上下波动约 ±1.5。所以单次跑得好不算数，必须过下面四关。', 'The flow is chaotic: the same program scores ±1.5 differently under a tiny start-up perturbation. One good run proves nothing, so a candidate must pass four gates.')}</p><div class="pipe">
+        <div><b>${L('① 快速初筛', '① Quick screen')}</b>${L('先跑 5 秒，明显变差的直接淘汰，节省算力', 'Run 5 s first; clearly worse programs are dropped to save compute')}</div>
+        <div><b>${L('② 6 个条件逐一对比', '② Head-to-head on 6 conditions')}</b>${L('在同一组扰动下，新程序与现任冠军一对一比分', 'New program vs. current champion under the same perturbations')}</div>
+        <div><b>${L('③ 稳定胜出才算', '③ Must win consistently')}</b>${L('平均领先要明显大于噪声（约 2 倍标准误），且没有一局大败', 'The average lead must clearly exceed the noise (≈ 2 standard errors), with no heavy loss')}</div>
+        <div><b>${L('④ 再加 3 个新条件确认', '④ Confirm on 3 fresh conditions')}</b>${L('换一组从没用过的扰动再比一次，仍然领先才晋升冠军', 'Re-test on unused perturbations; promoted only if it still leads')}</div>
+        <div><b>${L('最后：封存测试', 'Finally: sealed test')}</b>${L('ξ<sub>7</sub>、ξ<sub>8</sub> 从不给模型看，只用来给最终冠军打分', 'ξ<sub>7</sub>, ξ<sub>8</sub> are never shown to the model; they only score the final champion')}</div></div>`;
+      const evalP3 = `<p>${L('对照组规则：只用 3 个条件，平均领先 0.5 就晋升。', 'Control-arm rule: 3 conditions only; promote on a 0.5 average lead.')}</p><div class="pipe">
+        <div><b>${L('① 快速初筛', '① Quick screen')}</b>${L('先跑 5 秒，明显变差的淘汰', 'Run 5 s; drop clearly worse programs')}</div>
+        <div><b>${L('② 3 个条件对比', '② 3 conditions')}</b>${L('平均领先冠军 0.5，单局不输 0.75 以上', 'Lead the champion by 0.5 on average, never lose by more than 0.75')}</div>
+        <div><b>${L('最后：封存测试', 'Finally: sealed test')}</b>ξ<sub>7</sub>, ξ<sub>8</sub></div></div>
+        <p class="note" style="margin-top:6px">${L('结果：在 ±1.5 的混沌噪声下，这条规则容易被运气骗过，最终冠军在封存条件上只有 +0.1。这正是要用严格裁决的原因。', 'Result: under ±1.5 chaotic noise this rule is easily fooled by luck; its final champion scores only +0.1 on the sealed test. That is why the strict verdict matters.')}</p>`;
 
       const search = `<p>${L('模型写的是受限 Python 语句块，每个控制步执行一次。', 'The model writes a restricted Python block executed once per control step.')}</p>
       <dl class="facts">
@@ -77,10 +76,10 @@
 
       return blk('01', '控制对象', 'Control target', '三进气口鼓泡塔', 'Three-inlet bubble column', goal, true)
         + blk('02', '控制范围与约束', 'Control range & constraints', '拖动试试：真实 CFD 气相分布', 'Try it: real CFD gas distribution', demo, true)
-        + blk('03', '奖励函数', 'Reward', '分数怎么算', 'How the score works', reward, true)
-        + blk('04', '评估与裁决', 'Evaluation', evaluator === 'promote3' ? '阈值晋升（对照组）' : '配对 t 检验 + 确认', evaluator === 'promote3' ? 'Threshold promotion (control arm)' : 'Paired t-test + confirmation', evaluator === 'promote3' ? evalP3 : evalPT, false)
+        + blk('03', '奖励函数', 'Reward', '分数怎么算', 'How the score works', reward, false)
+        + blk('04', '怎样才算真的变好', 'What counts as better', evaluator === 'promote3' ? '对照组：宽松规则' : '四道关卡，防止被运气骗', evaluator === 'promote3' ? 'Control arm: lenient rule' : 'Four gates against luck', evaluator === 'promote3' ? evalP3 : evalPT, false)
         + blk('05', '搜索空间与策略', 'Search space & strategy', '程序、存档、探索', 'Programs, archive, exploration', search, false)
-        + blk('06', '任务提示词', 'Task prompt', '模型看到的全部问题定义（原文）', 'Everything the model is told (verbatim)', '<div class="prompt-doc" id="promptDoc"></div>', false);
+        + blk('06', '任务提示词（中英对照）', 'Task prompt (ZH / EN)', '模型看到的全部问题定义', 'Everything the model is told', '<p class="note" style="margin:0 0 10px">' + L('左为中文译文，右为实际发送给模型的英文原文。提示词只定义问题，不含任何控制建议。', 'Chinese translation beside the verbatim English actually sent to the model. The prompt only defines the problem and contains no control hints.') + '</p><div id="promptDoc"></div>', false);
     },
 
     prompt(text) {
@@ -94,7 +93,7 @@
       const keys = ['c10d20', 'c14d20', 'hl', 'const20', 'fixed', 'c40d20'];
       const v = F.vmax, cases = keys.map(k => ({ k, uc: F.configs[k].u_final[1] * 1000, gain: F.configs[k].mean_gain, a: CFD.unpack(F.configs[k].a, 0, 1), ux: CFD.unpack(F.configs[k].ux, -v, v), uy: CFD.unpack(F.configs[k].uy, -v, v) })).sort((p, q) => p.uc - q.uc);
       const view = new CFD.FieldView(document.getElementById('demoCol'), { nx: F.nx, ny: F.ny, smooth: 4, window: true });
-      document.getElementById('demoCbar').innerHTML = CFD.colorbar('alpha', 'ᾱ<sub>air</sub>');
+      document.getElementById('demoCbar').innerHTML = CFD.colorbar('dev', Lt('气含率偏差', 'gas-fraction deviation'));
       const sl = document.getElementById('demoU'), bars = [...document.querySelectorAll('#demoTh > div')];
       const name = { c10d20: Lt('10 · 极端', '10 · extreme'), c14d20: Lt('14 · 最优', '14 · best'), hl: Lt('17 · HL 冠军', '17 · HL champ'), const20: '21', fixed: Lt('30 · 均匀', '30 · equal'), c40d20: Lt('40 · 反向', '40 · reversed') };
       document.getElementById('demoChips').innerHTML = cases.map(c => `<button class="chip" data-u="${c.uc.toFixed(1)}">${name[c.k]}</button>`).join('');

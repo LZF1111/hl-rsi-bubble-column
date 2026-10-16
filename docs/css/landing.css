@@ -108,6 +108,52 @@
 .big-n { font-size: 44px; font-weight: 600; letter-spacing: -.04em; color: var(--blue); line-height: 1.1; margin-bottom: 8px; }
 .arch-crown { display: inline-flex; align-items: center; gap: 8px; margin-left: 24px; padding-left: 24px; border-left: 1px solid #c7c7cc; font-weight: 500; font-size: 14px; }
 .lang-bi .lead .en { font-size: .78em; margin-top: 10px; }
+
+/* v3 hero */
+.hero-fig { margin: 0; padding: 36px 0 56px; }
+.hero-fig .vs { max-width: 440px; margin-left: auto; }
+.hero-fig .vs .col-frame { height: 400px; }
+.hero-foot { max-width: 440px; margin: 16px 0 0 auto; display: grid; grid-template-columns: 1fr auto; gap: 10px 18px; align-items: center; }
+.hero-foot .hero-note { grid-column: 1 / -1; }
+.hero-t { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+.hero-t .play { width: 30px; height: 30px; font-size: 14px; }
+
+.what-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 34px; align-items: start; margin-top: 8px; }
+.what-grid .vs .col-frame { height: 380px; }
+.ch-head { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+.ch-head .cbar { width: 240px; }
+
+/* v3 evolution */
+.evo2 { margin-top: 56px; display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 28px; align-items: start; }
+.evo2 .stage-list { gap: 10px; }
+.evo-main { min-width: 0; background: #fff; border-radius: var(--r); padding: 24px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 24px rgba(0,0,0,.05); }
+.evo-main .vs .col-frame { height: 380px; }
+.evo-main .film-detail { box-shadow: none; padding: 20px 0 0; border-top: 1px solid var(--soft2); border-radius: 0; margin-top: 16px; }
+.film-cbar { margin-left: auto; } .film-cbar .cbar { width: 220px; }
+.film-scrub { flex-wrap: wrap; }
+@media (max-width: 600px) { .film-cbar { margin-left: 0; flex-basis: 100%; } .film-cbar .cbar { width: 100%; max-width: 260px; } }
+.ck { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 4px 0 14px; }
+.ck > div { background: var(--soft); border-radius: 12px; padding: 12px 14px; }
+.ck h5 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink3); }
+.ck > div:first-child h5 { color: var(--blue); }
+.ck p { margin: 0 0 4px !important; font-size: 13.5px !important; line-height: 1.5 !important; }
+.verdict-line { font-size: 14px; font-weight: 600; padding: 10px 14px; border-radius: 12px; background: var(--soft); color: var(--ink2); }
+.verdict-line.ok { background: #e8f0fb; color: var(--blue); }
+.fd-why { margin-top: 12px; font-size: 13px; color: var(--ink2); }
+.fd-why summary { cursor: pointer; font-weight: 600; color: var(--ink); }
+.fd-why p { font-style: italic; line-height: 1.55; margin: 8px 0 0 !important; font-size: 13px !important; color: var(--ink2) !important; }
+
+@media (max-width: 1060px) {
+  .evo2, .what-grid { grid-template-columns: minmax(0, 1fr); }
+  .evo2 .stage-list { flex-direction: row; overflow-x: auto; }
+  .evo2 .stage { min-width: 220px; }
+  .hero-fig .vs, .hero-foot { margin-left: 0; }
+}
+@media (max-width: 720px) {
+  .vs .col-frame, .hero-fig .vs .col-frame, .what-grid .vs .col-frame, .evo-main .vs .col-frame { height: 300px; }
+  .ck { grid-template-columns: 1fr; }
+  .evo-main { padding: 16px; }
+}
 @media (max-width: 720px) {
   .arch-inputs, .arch-mods, .arch-links { grid-template-columns: 1fr 1fr; }
   .arch-links { display: none; }

@@ -61,9 +61,9 @@
         { h: 250, x: [0, 20.3], y: [12, 34], xlabel: Lt('时间 t (s)', 'Time t (s)'), ylabel: 'u_C (mm/s)', xname: 't', digits: 1 });
       const names = Object.keys(LS), col = { 'SAC seed 1': '#d6517d', 'SAC seed 2': '#e07a9c', 'SAC seed 3': '#eba7be', 'HL run 1': '#0066cc', 'HL run 2': '#5a9be0' };
       C.bars(document.getElementById('cmpG'), conds.map((c, j) => ({ label: 'ξ' + c, values: names.map(n => ({ v: LS[n].gains[j], color: col[n], name: n })) })), { h: 250, ylabel: Lt('增益', 'Gain') });
-      const v = F.vmax, o = { nx: F.nx, ny: F.ny, smooth: 4, window: true };
+      const v = F.vmax, o = { nx: F.nx, ny: F.ny, smooth: 4 };
       ['fixed', 'sac', 'hl'].forEach((k, i) => new CFD.FieldView(document.getElementById('fq' + i), o).set(CFD.unpack(F.configs[k].a, 0, 1), CFD.unpack(F.configs[k].ux, -v, v), CFD.unpack(F.configs[k].uy, -v, v), F.configs[k].u_final));
-      document.getElementById('fqCbar').innerHTML = CFD.colorbar('alpha', 'ᾱ<sub>air</sub>');
+      document.getElementById('fqCbar').innerHTML = CFD.colorbar('dev', Lt('气含率偏差', 'gas-fraction deviation'));
     },
 
     mechanism(root, meta, F) {
@@ -85,9 +85,9 @@
         { h: 240, x: [0, 20.2], xlabel: Lt('时间 t (s)', 'Time t (s)'), ylabel: 'log₁₀ ‖Δα‖', xname: 't', yfmt: v => '10^' + v.toFixed(0), digits: 2 });
       const dose = [['c40d20', '40 @2s'], ['fixed', '30'], ['const0', '21 @0s'], ['const20', '21 @2s'], ['hl', '17 @2s'], ['c14d20', '14 @2s'], ['c10d20', '10 @2s']];
       C.bars(document.getElementById('mDose'), dose.map(([k, l]) => ({ label: l, values: [{ v: g(k), color: g(k) >= 0 ? '#0066cc' : '#d70015', name: Lt('增益', 'gain') }] })), { h: 240, ylabel: Lt('增益', 'Gain') });
-      const v = F.vmax, o = { nx: F.nx, ny: F.ny, smooth: 4, window: true };
+      const v = F.vmax, o = { nx: F.nx, ny: F.ny, smooth: 4 };
       ['c40d20', 'fixed', 'c14d20', 'c10d20'].forEach((k, i) => new CFD.FieldView(document.getElementById('mq' + i), o).set(CFD.unpack(F.configs[k].a, 0, 1), CFD.unpack(F.configs[k].ux, -v, v), CFD.unpack(F.configs[k].uy, -v, v), F.configs[k].u_final));
-      document.getElementById('mqCbar').innerHTML = CFD.colorbar('alpha', 'ᾱ<sub>air</sub>');
+      document.getElementById('mqCbar').innerHTML = CFD.colorbar('dev', Lt('气含率偏差', 'gas-fraction deviation'));
     },
   };
 })();

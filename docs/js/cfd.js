@@ -41,6 +41,23 @@
     }
     return a;
   }
+  const DEV_RANGE = 0.02;
+  // time-mean from t0 (default 3 s, after the column has filled) up to frame k; short window before t0
+  function cumMean(fr, t, k, t0) {
+    t0 = t0 == null ? 3 : t0;
+    let s = t.findIndex(x => x >= t0); if (s < 0) s = 0;
+    return k < s ? windowMean(fr, k, 5) : windowMean(fr, k, k - s + 1);
+  }
+  // lateral mean of the liquid at each height (freeboard rows -> null)
+  function rowMean(a, nx, ny) {
+    const m = new Array(ny);
+    for (let j = 0; j < ny; j++) {
+      let s = 0, n = 0;
+      for (let i = 0; i < nx; i++) { const v = a[j * nx + i]; if (v < 0.4) { s += v; n++; } }
+      m[j] = n > nx / 2 ? s / n : null;
+    }
+    return m;
+  }
   // mean of frames[k-w+1..k]
   function windowMean(fr, k, w) {
     const s = Math.max(0, k - w + 1), out = new Float32Array(fr[k].length);
@@ -59,7 +76,7 @@
   /* opts: {nx, ny, tracers, mode:'alpha'|'uy', inlets, speed} */
   class FieldView {
     constructor(canvas, opts) {
-      this.c = canvas; this.o = Object.assign({ tracers: 0, mode: 'alpha', inlets: true, speed: 1, lo: RANGE.lo, hi: RANGE.hi, smooth: 2 }, opts);
+      this.c = canvas; this.o = Object.assign({ tracers: 0, mode: 'dev', inlets: false, speed: 1, lo: RANGE.lo, hi: RANGE.hi, dr: DEV_RANGE, smooth: 2 }, opts);
       this.g = canvas.getContext('2d'); this.parts = []; this.raf = 0; this.u = [0.03, 0.03, 0.03];
       this.reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
       this.off = document.createElement('canvas');
@@ -73,7 +90,7 @@
       this.W = Math.round(r.width * dpr); this.H = Math.round(r.height * dpr); this.dpr = dpr;
       this.c.width = this.W; this.c.height = this.H; this.dirty = true; this.draw();
     }
-    set(a, ux, uy, u) { this.a = this.o.smooth ? smooth(a, this.o.nx, this.o.ny, this.o.smooth) : a; this.ux = ux; this.uy = uy; if (u) this.u = u; this.dirty = true; if (!this.raf) { this.draw(); this.loop(); } }
+    set(a, ux, uy, u) { this.a = this.o.smooth ? smooth(a, this.o.nx, this.o.ny, this.o.smooth) : a; this.rm = rowMean(this.a, this.o.nx, this.o.ny); this.ux = ux; this.uy = uy; if (u) this.u = u; this.dirty = true; if (!this.raf) { this.draw(); this.loop(); } }
     box() { const ib = this.o.inlets ? Math.round(this.H * 0.045) : 0; return { w: this.W, h: this.H - ib, ib }; }
     render() {
       // render at grid-ish resolution then let canvas upscale smoothly: fast and looks like a CFD contour
@@ -84,7 +101,11 @@
         const y = (1 - (py + 0.5) / h) * ny;
         for (let px = 0; px < w; px++) {
           const x = (px + 0.5) / w * nx, o = (py * w + px) * 4;
-          const c = this.o.mode === 'uy' ? DIVERGE(sample(this.uy, nx, ny, x, y) / 0.25) : alphaRGB(sample(this.a, nx, ny, x, y), this.o.lo, this.o.hi);
+          let c;
+          if (this.o.mode === 'dev') {
+            const a = sample(this.a, nx, ny, x, y), j = Math.max(0, Math.min(ny - 1, Math.floor(y)));
+            c = a > 0.4 || this.rm[j] == null ? FREE : DIVERGE((a - this.rm[j]) / this.o.dr);
+          } else c = this.o.mode === 'uy' ? DIVERGE(sample(this.uy, nx, ny, x, y) / 0.25) : alphaRGB(sample(this.a, nx, ny, x, y), this.o.lo, this.o.hi);
           d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255;
         }
       }
@@ -145,11 +166,11 @@
   function colorbar(mode, label, lo, hi) {
     lo = lo == null ? RANGE.lo : lo; hi = hi == null ? RANGE.hi : hi;
     const n = 16, stops = Array.from({ length: n + 1 }, (_, i) => {
-      const v = i / n, c = mode === 'uy' ? DIVERGE(v * 2 - 1) : jet(v);
+      const v = i / n, c = mode === 'uy' || mode === 'dev' ? DIVERGE(v * 2 - 1) : jet(v);
       return `<stop offset="${v}" stop-color="rgb(${c})"/>`;
     }).join('');
     const id = 'cb' + Math.random().toString(36).slice(2, 8);
-    const t = mode === 'uy' ? ['−0.25', '0', '+0.25 m/s'] : [lo.toFixed(2), ((lo + hi) / 2).toFixed(2), hi.toFixed(2)];
+    const t = mode === 'uy' ? ['−0.25', '0', '+0.25 m/s'] : mode === 'dev' ? [Lt('偏少', 'less gas') + ' −' + DEV_RANGE, '0', '+' + DEV_RANGE + ' ' + Lt('偏多', 'more gas')] : [lo.toFixed(2), ((lo + hi) / 2).toFixed(2), hi.toFixed(2)];
     return `<div class="cbar"><svg viewBox="0 0 200 8" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="${id}">${stops}</linearGradient></defs><rect width="200" height="8" rx="4" fill="url(#${id})"/></svg><div class="cbar-t"><span>${t[0]}</span><span>${label}</span><span>${t[2]}</span></div></div>`;
   }
 
@@ -165,5 +186,17 @@
     return { g: v, I: sd / (m + 0.01) };
   }
 
-  window.CFD = { FieldView, unpack, grid, frames, colorbar, alphaRGB, jet, RANGE, smooth, windowMean, thirds };
+  // inlet gas velocities as three labelled bars (HTML, crisp at any size)
+  function inlets(u, compact) {
+    const mm = u.map(v => v * 1000), lab = [Lt('左', 'L'), Lt('中', 'C'), Lt('右', 'R')];
+    return `<div class="bars3 inl${compact ? ' sm' : ''}" aria-label="inlet gas velocities">${mm.map((v, i) => `<div><b>${v.toFixed(0)}</b><em><i style="height:${Math.max(4, v / 50 * 100).toFixed(0)}%" class="${v < 29.5 ? 'lo' : v > 30.5 ? 'hi' : ''}"></i></em><span>${lab[i]}</span></div>`).join('')}</div>`;
+  }
+
+  // left / centre / right gas fraction (%) with the max-min spread
+  function thirdsHTML(g) {
+    const p = g.map(v => v * 100), lo = 10, hi = 13.5, sp = Math.max(...p) - Math.min(...p), lab = [Lt('左', 'L'), Lt('中', 'C'), Lt('右', 'R')];
+    return `<div class="bars3 t3">${p.map((v, i) => `<div><b>${v.toFixed(1)}</b><em><i style="height:${Math.max(3, Math.min(100, (v - lo) / (hi - lo) * 100)).toFixed(0)}%"></i></em><span>${lab[i]}</span></div>`).join('')}</div><div class="t3-sp">${Lt('三段最大差', 'Max spread')} <b>${sp.toFixed(2)}</b> ${Lt('个百分点', 'pp')}</div>`;
+  }
+
+  window.CFD = { FieldView, unpack, grid, frames, colorbar, alphaRGB, jet, RANGE, DEV_RANGE, smooth, windowMean, cumMean, thirds, inlets, thirdsHTML };
 })();

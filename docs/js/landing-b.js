@@ -5,18 +5,23 @@
   <div class="wrap">
     <div class="center reveal">
       <p class="eyebrow">${L('一次真实的进化', 'One real evolution run')}</p>
-      <h2 class="headline">${L('假设、实验、裁决。<br>一轮接一轮。', 'Hypothesis, experiment, verdict.<br>Round after round.')}</h2>
-      <p class="lead">${L('每一列都是同一个初始条件 ξ<sub>0</sub> 上重新运行的真实 CFD。点击左侧任意一轮，看大语言模型改了什么、为什么改、流场怎么变。', 'Each column is a real CFD re-run on the same condition ξ<sub>0</sub>. Pick a round on the left to see what the model changed, why, and how the flow responded.')}</p>
+      <h2 class="headline">${L('从均匀布气到冠军，<br>只用了 6 轮。', 'From equal flow to champion<br>in six rounds.')}</h2>
+      <p class="lead">${L('云图是在同一初始条件 ξ<sub>0</sub> 上重新计算的真实 CFD（3 s 起时均）；得分是 6 个开发条件的平均提升。点选一轮，和起点对比：它改了什么、保留了什么、气体分布变成什么样。', 'Fields are real CFD re-runs on one starting condition ξ<sub>0</sub> (time-mean from 3 s); scores are mean gains over 6 development conditions. Pick a round and compare it with the starting point: what changed, what was kept, and what the gas distribution became.')}</p>
     </div>
-    <div class="film reveal">
+    <div class="evo2 reveal">
       <div class="stage-list" id="filmList"></div>
-      <div class="film-right">
-        <div class="film-cols" id="filmCols"></div>
-        <div class="film-scrub"><button class="play" id="filmPlay" aria-label="play">▶</button><input type="range" id="filmT" min="0" max="50" value="50" aria-label="time"><span class="num" id="filmTl">t = 20.2 s</span></div>
+      <div class="evo-main">
+        <div class="vs" id="filmVs"></div>
+        <div class="film-scrub"><button class="play" id="filmPlay" aria-label="play">▶</button><input type="range" id="filmT" min="0" max="49" value="49" aria-label="time"><span class="num" id="filmTl">t = 20.2 s</span><span id="filmCbar" class="film-cbar"></span></div>
         <div class="film-detail" id="filmDetail"></div>
       </div>
     </div>
-    <div class="card reveal" style="margin-top:28px"><h3>${L('奖励随进化上升', 'Return rises with evolution')}</h3><p class="sub">${L('每个点是一轮候选在 6 个开发条件上的平均增益；蓝色台阶是冠军，只有通过统计裁决才会抬升。', 'Each dot is one round\'s mean gain over 6 development conditions; the blue staircase is the champion, which rises only when a candidate passes the statistical test.')}</p><div class="chart" id="evoChart"></div></div>
+    <div class="grid g2 reveal" style="margin-top:24px">
+      <div class="card"><h3>${L('得分：冠军只升不降', 'Score: the champion only moves up')}</h3><p class="sub">${L('点 = 每轮新程序在 6 个开发条件上相对均匀布气的平均提升；蓝色台阶 = 当前冠军。', 'Dots: each round\'s mean gain over equal flow on 6 development conditions. Blue steps: the current champion.')}</p><div class="chart" id="evoChart"></div>
+        <div class="legend"><span><i style="background:#0066cc"></i>${L('晋升冠军', 'Promoted')}</span><span><i style="background:#c7c7cc"></i>${L('未通过裁决', 'Not adopted')}</span><span><i style="background:#e0a030"></i>${L('初筛淘汰', 'Screened out')}</span></div></div>
+      <div class="card"><h3>${L('策略：中间口气速一路下调', 'Strategy: the centre inlet keeps coming down')}</h3><p class="sub">${L('每轮程序最终的中间口气速（两侧自动补齐）。前 5 轮只敢小改，第 6 轮找到"降到 17 mm/s"，之后的探索都围绕它。', 'Final centre-inlet velocity of each round\'s program (the sides make up the rest). Rounds 1–5 only nudge it; round 6 finds "down to 17 mm/s", and later exploration clusters around it.')}</p><div class="chart" id="stratChart"></div>
+        <div class="legend"><span><i style="background:#0066cc"></i>${L('冠军', 'Champion')}</span><span><i style="background:#c7c7cc"></i>${L('挑战者', 'Challenger')}</span><span><i style="background:#8e8e93;height:2px"></i>${L('均匀 30 mm/s', 'Equal 30 mm/s')}</span></div></div>
+    </div>
   </div>
 </section>
 

@@ -14,10 +14,10 @@
   window.LANDING_SECTIONS = () => `
 <section class="sec tight">
   <div class="wrap grid g4 stats-dark">
-    <div class="reveal"><b id="sRounds">—</b><span>${L('轮自主进化（4 次无先验运行）', 'autonomous rounds (4 prior-free runs)')}</span></div>
-    <div class="reveal"><b id="sCfd">—</b><span>${L('段真实 CFD，每段 0.1 s 物理时间', 'real CFD segments, 0.1 s each')}</span></div>
-    <div class="reveal"><b id="sBest">—</b><span>${L('最佳冠军在留出条件上的回报提升', 'best champion, held-out return gain')}</span></div>
-    <div class="reveal"><b>3</b><span>${L('行代码：最终控制器的长度', 'lines: length of the final controller')}</span></div>
+    <div class="reveal"><b>−28%</b><span>${L('留出条件 ξ<sub>7</sub> 上，3 s 后的气体分布不均匀度', 'gas-distribution imbalance after 3 s on held-out ξ<sub>7</sub>')}</span></div>
+    <div class="reveal"><b>6</b><span>${L('轮就找到冠军；之后 30 个挑战者都没能通过裁决', 'rounds to the champion; none of the next 30 challengers passed the verdict')}</span></div>
+    <div class="reveal"><b>3.7×</b><span>${L('比深度强化学习 SAC 少用的 CFD 计算', 'less CFD compute than deep RL (SAC)')}</span></div>
+    <div class="reveal"><b>3</b><span>${L('行可读代码：最终控制器全部内容', 'readable lines: the entire final controller')}</span></div>
   </div>
 </section>
 
@@ -26,19 +26,19 @@
     <div class="center reveal">
       <p class="eyebrow">${L('一分钟看懂', 'In one minute')}</p>
       <h2 class="headline">${L('塔里的气，总往中间跑。', 'The gas keeps drifting to the centre.')}</h2>
-      <p class="lead">${L('鼓泡塔底部有左、中、右三个进气口，总气量固定。均匀进气时，大尺度液相环流把气泡卷向中央，两侧缺气。任务是只靠重新分配三口气量，让气体在塔内分布均匀。',
-        'A bubble column has three bottom inlets with a fixed total flow. Under equal flow, the large liquid circulation sweeps bubbles to the centre and starves the walls. The task: redistribute the three inlet flows so the gas spreads evenly.')}</p>
+      <p class="lead">${L('鼓泡塔底部有左、中、右三个进气口。均匀进气时，液体的大尺度环流把气泡卷向中央，两侧缺气，反应和传质就不均匀。我们能改变的只有一样东西：<b>每个进气口的气速</b>。',
+        'A bubble column has three bottom inlets. With equal flow, the large liquid circulation sweeps bubbles to the centre and starves the walls, so reaction and mass transfer become uneven. There is only one thing we can change: <b>the gas velocity of each inlet</b>.')}</p>
     </div>
     <div class="explain reveal">
-      <div class="ex-step"><span class="ex-n">1</span><h3>${L('只能动三个阀门', 'Three valves, nothing else')}</h3><p>${L('每口 10–50 mm/s，三口之和恒为 90 mm/s，每 0.1 s 最多改 5 mm/s。', 'Each inlet 10–50 mm/s, sum fixed at 90 mm/s, at most 5 mm/s change per 0.1 s.')}</p></div>
-      <div class="ex-step"><span class="ex-n">2</span><h3>${L('分数 = 三段气量差多少', 'Score = how unequal the thirds are')}</h3><p>${L('把塔切成左中右三段，气含率越接近，扣分越少，20 秒累计。', 'Cut the column into thirds; the closer their gas fractions, the smaller the penalty, summed over 20 s.')}</p></div>
-      <div class="ex-step"><span class="ex-n">3</span><h3>${L('流动是混沌的', 'The flow is chaotic')}</h3><p>${L('0.3% 的扰动 3 秒后就让流场完全不同，单次"变好"可能只是运气。', 'A 0.3% nudge makes the flow unrecognisable within 3 s, so one "improvement" may be pure luck.')}</p></div>
+      <div class="ex-step"><span class="ex-n">1</span><h3>${L('控制量：三口气速', 'Control: three inlet velocities')}</h3><p>${L('每口 10–50 mm/s，三口之和恒为 90 mm/s（总气量不变），每 0.1 s 每口最多改 5 mm/s。', 'Each inlet 10–50 mm/s, the sum fixed at 90 mm/s (same total gas), at most 5 mm/s change per inlet every 0.1 s.')}</p></div>
+      <div class="ex-step"><span class="ex-n">2</span><h3>${L('目标：三段气含率一样多', 'Goal: equal gas in each third')}</h3><p>${L('把塔的下部切成左中右三段，比较三段的平均气含率。越接近，得分越高。', 'Split the lower column into left, centre and right thirds and compare their mean gas fraction. The closer they are, the higher the score.')}</p></div>
+      <div class="ex-step"><span class="ex-n">3</span><h3>${L('难点：流动是混沌的', 'Hard part: the flow is chaotic')}</h3><p>${L('入口气速差 0.0001 m/s，3 秒后流场就完全不同。一次"变好"可能只是运气，必须多次重复验证。', 'A 0.0001 m/s difference at the inlet makes the flow unrecognisable within 3 s. A single "improvement" can be luck, so every claim needs repeated tests.')}</p></div>
     </div>
-    <div class="explain-fig reveal">
-      <div class="card"><h3>${L('时均气含率：均匀布气 vs 进化后', 'Time-mean gas fraction: equal flow vs evolved')}</h3><p class="sub">${L('细网格 30×120 复核，5 个条件平均，t > 3 s', 'Fine-mesh 30×120 check, 5-condition average, t > 3 s')}</p>
-        <div class="pair-fields"><div><div class="col-frame mean-col"><canvas id="meanA"></canvas></div><p class="col-cap dk">${L('均匀布气', 'Equal flow')}</p></div><div><div class="col-frame mean-col"><canvas id="meanB"></canvas></div><p class="col-cap dk">${L('中间 → 两侧', 'Centre → sides')}</p></div><div class="pair-legend"><div id="meanCbar"></div><p class="note">${L('中央气柱被"打散"到两侧，评分窗内三段气含率趋于一致。', 'The central plume spreads to the sides; the three thirds in the scoring window even out.')}</p></div></div></div>
-      <div class="card"><h3>${L('三段气含率剖面', 'Lateral gas-fraction profile')}</h3><p class="sub">${L('评分窗 0.05–0.6 m 内按宽度平均', 'Averaged over the scoring window 0.05–0.6 m')}</p><div class="chart" id="profChart"></div>
-        <div class="legend"><span><i style="background:#8e8e93"></i>${L('均匀布气', 'Equal flow')}</span><span><i style="background:#0066cc"></i>${L('进化程序（38,14,38）', 'Evolved (38,14,38)')}</span></div></div>
+    <div class="card reveal" style="margin-top:20px">
+      <div class="ch-head"><div><h3>${L('改变入口气速，气体分布随之改变', 'Change the inlet velocities, and the gas distribution follows')}</h3><p class="sub">${L('细网格 30×120×10 实算，5 个条件平均的时均场（t > 3 s）。左：三口都是 30 mm/s；右：进化出的分配，中间 14、两侧 38 mm/s。', 'Fine-mesh 30×120×10 runs, time-mean over 5 conditions (t > 3 s). Left: 30 mm/s at every inlet. Right: the evolved split, 14 in the centre and 38 at the sides.')}</p></div><div id="meanCbar"></div></div>
+      <div class="what-grid"><div class="vs" id="meanVs"></div><div><h4 class="vs-k" style="margin:0 0 8px">${L('横向气含率剖面（评分窗内平均）', 'Lateral gas-fraction profile (scoring window)')}</h4><div class="chart" id="profChart"></div>
+        <div class="legend"><span><i style="background:#8e8e93"></i>${L('均匀布气', 'Equal flow')}</span><span><i style="background:#0066cc"></i>${L('进化分配', 'Evolved split')}</span></div>
+        <p class="note" style="margin-top:14px">${L('均匀布气时中间鼓起一个"气包"（红）、两侧偏少（蓝）；把中间口的气挪到两侧后，剖面变平，三段最大差从 1.5 降到 0.7 个百分点。', 'With equal flow a gas bulge forms in the centre (red) while the sides run short (blue). Moving gas from the centre inlet to the sides flattens the profile: the largest spread between thirds falls from 1.5 to 0.7 percentage points.')}</p></div></div>
     </div>
   </div>
 </section>
@@ -83,10 +83,10 @@ if <span class="c3">paired_t</span>(result, champion) and <span class="c3">confi
       </div>
     </div>
     <div class="rsi-strip">
-      <div class="rsi-card reveal"><span class="k">01 · RSI</span><h3>${L('改进自己的产物', 'Improves its own artefact')}</h3><p>${L('每一轮的输入是上一轮自己写的程序和笔记，输出是新的程序和笔记。', 'Each round takes its own previous program and notebook as input and outputs new ones.')}</p></div>
-      <div class="rsi-card reveal"><span class="k">02 · Evidence</span><h3>${L('读轨迹，不读梯度', 'Reads traces, not gradients')}</h3><p>${L('看入口速度、三段气含率、I(t) 的完整曲线，提出因果假设。', 'Reads full inlet, gas-fraction and I(t) traces and forms causal hypotheses.')}</p></div>
-      <div class="rsi-card reveal"><span class="k">03 · Ratchet</span><h3>${L('只接受可信的进步', 'Only trusts real progress')}</h3><p>${L('6 个开发条件配对 t 检验，再加 3 个新鲜确认条件。假阳性约 2%。', 'Paired t-test on 6 development conditions plus 3 fresh confirmations. ~2% false-positive rate.')}</p></div>
-      <div class="rsi-card reveal"><span class="k">04 · Readable</span><h3>${L('结果可以逐行审查', 'Every line is auditable')}</h3><p>${L('冠军是 3 行 Python，而不是黑箱网络。', 'The champion is 3 lines of Python, not a black-box network.')}</p></div>
+      <div class="rsi-card reveal"><span class="k">01</span><h3>${L('自己改进自己', 'Improves its own work')}</h3><p>${L('每一轮读上一轮自己写的程序和笔记，再写出新的程序和笔记。', 'Each round reads the program and notes it wrote last round, then writes new ones.')}</p></div>
+      <div class="rsi-card reveal"><span class="k">02</span><h3>${L('看数据，提假设', 'Reads data, forms hypotheses')}</h3><p>${L('看入口气速、三段气含率随时间的完整曲线，写下"为什么"再动手。', 'It reads full time traces of inlet velocity and gas in each third and states "why" before changing code.')}</p></div>
+      <div class="rsi-card reveal"><span class="k">03</span><h3>${L('不被运气骗', 'Not fooled by luck')}</h3><p>${L('每个新程序要在 9 个不同扰动下都比现任冠军好，才会被采用。单次跑得好不算数。', 'A new program is adopted only if it beats the current champion across 9 different perturbations. One lucky run does not count.')}</p></div>
+      <div class="rsi-card reveal"><span class="k">04</span><h3>${L('结果可审查', 'Auditable result')}</h3><p>${L('冠军是 3 行 Python，工程师可以直接读懂、修改、部署。', 'The champion is 3 lines of Python that an engineer can read, edit and deploy.')}</p></div>
     </div>
   </div>
 </section>`;
