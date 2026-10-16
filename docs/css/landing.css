@@ -111,15 +111,15 @@
 
 /* v3 hero */
 .hero-fig { margin: 0; padding: 36px 0 56px; }
-.hero-fig .vs { max-width: 440px; margin-left: auto; }
-.hero-fig .vs .col-frame { height: 400px; }
+.hero-fig .vs { max-width: 520px; margin-left: auto; }
+
 .hero-foot { max-width: 440px; margin: 16px 0 0 auto; display: grid; grid-template-columns: 1fr auto; gap: 10px 18px; align-items: center; }
 .hero-foot .hero-note { grid-column: 1 / -1; }
 .hero-t { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink2); font-variant-numeric: tabular-nums; }
 .hero-t .play { width: 30px; height: 30px; font-size: 14px; }
 
 .what-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 34px; align-items: start; margin-top: 8px; }
-.what-grid .vs .col-frame { height: 380px; }
+
 .ch-head { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
 .ch-head .cbar { width: 240px; }
 
@@ -127,7 +127,7 @@
 .evo2 { margin-top: 56px; display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 28px; align-items: start; }
 .evo2 .stage-list { gap: 10px; }
 .evo-main { min-width: 0; background: #fff; border-radius: var(--r); padding: 24px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 24px rgba(0,0,0,.05); }
-.evo-main .vs .col-frame { height: 380px; }
+
 .evo-main .film-detail { box-shadow: none; padding: 20px 0 0; border-top: 1px solid var(--soft2); border-radius: 0; margin-top: 16px; }
 .film-cbar { margin-left: auto; } .film-cbar .cbar { width: 220px; }
 .film-scrub { flex-wrap: wrap; }
@@ -150,7 +150,7 @@
   .hero-fig .vs, .hero-foot { margin-left: 0; }
 }
 @media (max-width: 720px) {
-  .vs .col-frame, .hero-fig .vs .col-frame, .what-grid .vs .col-frame, .evo-main .vs .col-frame { height: 300px; }
+  
   .ck { grid-template-columns: 1fr; }
   .evo-main { padding: 16px; }
 }
@@ -206,10 +206,10 @@
 .film-foot { display: flex; justify-content: flex-end; margin-top: 6px; }
 @media (max-width: 1060px) { .hero-cap, #heroPl, .hero-ep { margin-left: 0; } }
 
-.hero-fig .vs .col-frame { height: 290px; }
+
 .hero-fig { padding-top: 12px; }
 .hero { padding-bottom: 0; }
-@media (max-width: 720px) { .hero-fig .vs .col-frame { height: 280px; } }
+
 
 .hero-cap { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
 .hero-cap .seg button { font-size: 12px; padding: 4px 10px; }

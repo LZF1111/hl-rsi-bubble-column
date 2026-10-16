@@ -123,8 +123,14 @@
       det.innerHTML = `<div class="fd-grid"><div><h4>${L('这一轮', 'This round')}</h4><p>${L(s.dzh, s.den)}</p>
         ${r ? `<div class="ck"><div><h5>${L('和当时冠军相比，改了', 'Changed vs. the champion')}</h5>${dl.changed.length ? dl.changed.map(x => `<p>${x}</p>`).join('') : `<p class="muted">${L('只调了参数细节', 'only fine parameter tweaks')}</p>`}</div><div><h5>${L('保留不变', 'Kept')}</h5>${dl.kept.map(x => `<p>${x}</p>`).join('') || '<p>—</p>'}</div></div>
         <h5 class="sc-h">${L('和冠军逐场比赛', 'Scene-by-scene against the champion')}</h5>${D.scorecard(run, r)}` : ''}</div>
-        <div><h4>${L('程序代码', 'Program code')}${r ? ` <span class="pill acc">+${df.add}</span><span class="pill">−${df.del}</span>` : ''}</h4><pre class="code">${df.html}</pre>${r ? `<details class="fd-why"><summary>${L('模型写下的理由（英文原文）', 'Rationale written by the model (verbatim)')}</summary><p>${D.esc(r.rationale || '')}</p></details>` : ''}<a class="btn ghost" href="console.html#round/${RUN}/${r ? r.round : 1}">${L('在控制台查看这一轮的完整过程 ›', 'See this round in full in the console ›')}</a></div></div>`;
+        <div><h4>${L('程序代码', 'Program code')}${r ? ` <span class="pill acc">+${df.add}</span><span class="pill">−${df.del}</span>` : ''}</h4><pre class="code">${df.html}</pre>${r ? `<div id="fdRz"></div><details class="fd-why"><summary>${L('模型写下的完整理由（中英对照）', 'Full rationale written by the model (ZH / EN)')}</summary><div id="fdRat"></div></details>` : ''}<a class="btn ghost" href="console.html#round/${RUN}/${r ? r.round : 1}">${L('在控制台查看这一轮的完整过程 ›', 'See this round in full in the console ›')}</a></div></div>`;
       Lang.bind(det);
+      if (r) D.zh(RUN).then(Z => {
+        const z = Z[String(r.round)] || {}, a = document.getElementById('fdRz'), b = document.getElementById('fdRat');
+        if (a) a.innerHTML = `<h5 class="sc-h">${L('模型的分析过程', 'How the model reasoned')}</h5>` + D.reasonSteps(z, r, `<p class="zh-t">${D.f2(r.mean_gain)} · ${r.decision === 'accepted' ? '晋升为冠军' : '未采纳'}</p><p class="en-t">${r.decision === 'accepted' ? 'promoted' : 'not adopted'}</p>`);
+        if (b) b.innerHTML = D.bitext(z.zh, r.rationale);
+        Lang.bind(det);
+      });
     };
     list.querySelectorAll('.stage').forEach(b => b.onclick = () => select(+b.dataset.i));
     select(3);

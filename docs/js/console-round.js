@@ -35,9 +35,12 @@
         <div class="card"><h3>${L('代码变化', 'Code change')} <span id="dfp"></span></h3><p class="sub">${L(`相对父代 ${pz}`, `Against parent ${pz}`)}</p><pre class="code" id="rDiff"></pre></div>
       </div>
 
-      <div class="grid g2">
-        <div class="card"><h3>${L('模型的理由', 'Model rationale')}</h3><p class="sub">${L('原文（英文），模型在写程序前给出的假设', 'Verbatim; the hypothesis the model states before writing code')}</p><div class="prose">${D.esc(r.rationale || r.error || '—')}</div></div>
-        <div class="card"><h3>${L('模型笔记本', 'Model notebook')}</h3><p class="sub">${L('模型自写、每轮整体重写的长期记忆（≤ 6000 字符）', 'Self-written long-term memory, fully rewritten each round (≤ 6000 chars)')}</p><div class="nb">${D.esc(r.notes || '—')}</div></div>
+      <div class="card"><h3>${L('这一轮，模型是怎么分析和改进的', 'How the model analysed and improved this round')}</h3><p class="sub">${L('模型看不到流场图，只能看到上一轮给它的数字证据：父代程序在练习场景 1 中左/中/右三块含气量和进气口气速随时间的记录，以及每个场景的得分。下面左图就是它看到的那条记录。', 'The model never sees field images. It only gets numbers from earlier rounds: the parent program\'s left/centre/right gas and inlet velocities over time in practice scene 1, and the score in every scene. The chart below is exactly that record.')}</p>
+        <div class="rz-grid"><div><h5 class="rz-ch">${L(`模型看到的证据：父代 ${pz} 在练习场景 1 中的记录（每 0.8 s 一个点）`, `Evidence it saw: parent ${pz} in practice scene 1 (one point per 0.8 s)`)}</h5><div class="chart" id="rzT"></div><div class="chart" id="rzU"></div>
+          <div class="legend"><span><i style="background:#3a7bd5"></i>${L('左', 'Left')}</span><span><i style="background:#e0a030"></i>${L('中', 'Centre')}</span><span><i style="background:#d6517d"></i>${L('右', 'Right')}</span></div></div>
+          <div id="rzSteps"><p class="note">${L('加载中…', 'Loading…')}</p></div></div>
+        <details class="fd-why" open><summary>${L('模型写下的完整理由（中英对照）', 'Full rationale written by the model (ZH / EN)')}</summary><div id="rzRat"></div></details>
+        <details class="fd-why"><summary>${L('模型自己的笔记本：每轮整体重写的长期记忆（中英对照）', 'The model\'s own notebook, rewritten every round (ZH / EN)')}</summary><div id="rzNb"></div></details>
       </div>
 
       <div class="card"><h3>${L('这一轮的提示词上下文', 'Prompt context for this round')}</h3><p class="sub">${L('模型每轮收到两部分：① 固定的任务提示词（只定义问题，不含答案）；② 本轮动态证据——上一轮笔记本、父代程序、近期裁决、本轮指令。', 'Each round the model receives: ① the fixed task prompt (defines the problem, no answers); ② dynamic evidence: last notebook, parent program, recent verdicts, this round\'s request.')}</p>
@@ -45,8 +48,8 @@
           <details class="ctx-item"><summary>${L('固定任务提示词（中英对照）', 'Fixed task prompt (ZH / EN)')}<span class="k">system</span></summary><div>${PROMPT.html(CONSOLE.meta().prompt[CONSOLE.runs()[state.run].protocol.acceptance === 'paired_t' ? 'system_paired_t' : 'system_promote3'], CONSOLE.runs()[state.run].protocol.acceptance === 'paired_t' ? 'paired_t' : 'promote3')}</div></details>
           <details class="ctx-item" open><summary>${L('指令', 'Request')}<span class="k">requested_behaviour_cell</span></summary><div><p class="note">${r.requested_cell ? L(`本轮被随机要求尝试一种还没试过的操作风格 <b>${D.esc(r.requested_cell)}</b>：写一个在练习场景 1 上表现为该风格的程序，作为信息性实验，而不是暗示它有效。`, `This round was randomly asked to explore the unexplored cell <b>${D.esc(r.requested_cell)}</b>: write a program whose behaviour in practice scene 1 falls in it, as an informative experiment, not a hint that it works.`) : L('无探索指令：模型可自由改进父代或写全新程序。', 'No exploration request: the model may refine the parent or write something new.')}</p></div></details>
           <details class="ctx-item"><summary>${L('父代程序', 'Parent program')}<span class="k">${pz}</span></summary><div><pre class="code">${D.highlight(r.parent_source || '')}</pre></div></details>
-          <details class="ctx-item"><summary>${L('上一轮笔记本', 'Previous notebook')}<span class="k">notes · R${r.round - 1}</span></summary><div><div class="nb">${D.esc((R.find(x => x.round === r.round - 1) || {}).notes || L('（首轮，笔记本为空）', '(first round: empty notebook)'))}</div></div></details>
-          <details class="ctx-item"><summary>${L('近期决策', 'Recent decisions')}<span class="k">table</span></summary><div><table class="t"><thead><tr><th>${L('轮', 'Round')}</th><th>${L('裁决', 'Verdict')}</th><th>${L('增益', 'Gain')}</th><th>${L('行为格', 'Cell')}</th></tr></thead><tbody>${R.filter(x => x.round < r.round).slice(-8).map(x => `<tr><td class="num">R${x.round}</td><td>${K.pill(x.decision)}</td><td class="num ${D.cls(x.mean_gain)}">${D.f2(x.mean_gain)}</td><td class="num">${D.esc(x.behaviour ? x.behaviour.cell : '—')}</td></tr>`).join('') || `<tr><td colspan="4" class="note">${L('无', 'none')}</td></tr>`}</tbody></table></div></details>
+          <details class="ctx-item"><summary>${L('上一轮笔记本', 'Previous notebook')}<span class="k">notes · R${r.round - 1}</span></summary><div><div id="rzPrevNb"></div></div></details>
+          <details class="ctx-item"><summary>${L('近期决策', 'Recent decisions')}<span class="k">table</span></summary><div><table class="t"><thead><tr><th>${L('轮', 'Round')}</th><th>${L('裁决', 'Verdict')}</th><th>${L('得分', 'Score')}</th><th>${L('操作风格', 'Style')}</th></tr></thead><tbody>${R.filter(x => x.round < r.round).slice(-8).map(x => `<tr><td class="num">R${x.round}</td><td>${K.pill(x.decision)}</td><td class="num ${D.cls(x.mean_gain)}">${D.f2(x.mean_gain)}</td><td class="num">${D.esc(x.behaviour ? x.behaviour.cell : '—')}</td></tr>`).join('') || `<tr><td colspan="4" class="note">${L('无', 'none')}</td></tr>`}</tbody></table></div></details>
         </div></div>`;
 
     document.getElementById('rPrev').onclick = () => K.goRound(r.round - 1);
@@ -56,6 +59,27 @@
     const df = D.diff(r.parent_source || '', r.source || '');
     document.getElementById('rDiff').innerHTML = df.html;
     document.getElementById('dfp').innerHTML = `<span class="pill acc">+${df.add}</span><span class="pill">−${df.del}</span>`;
+
+    // evidence the model actually received: parent's logged traces on condition 0
+    const P = parentR || { velocity_trace: run.baseline_trace.velocity_trace, thirds_trace: run.baseline_trace.thirds_trace, horizon: 200 };
+    const dtP = P.horizon == 50 ? 0.2 : 0.8, cols = ['#3a7bd5', '#e0a030', '#d6517d'], nm = [Lt('左', 'L'), Lt('中', 'C'), Lt('右', 'R')];
+    if (P.thirds_trace && P.thirds_trace.length) {
+      C.lines(document.getElementById('rzT'), [0, 1, 2].map(j => ({ name: nm[j], color: cols[j], width: 2.2, pts: P.thirds_trace.map((g, i) => [(i + 1) * dtP, g[j] * 100]) })),
+        { h: 170, x: [0, 20.3], y: [9, 14.5], xlabel: Lt('时间 (s)', 'Time (s)'), ylabel: Lt('含气量 %', 'Gas %'), xname: 't', digits: 2 });
+      C.lines(document.getElementById('rzU'), [0, 1, 2].map(j => ({ name: nm[j], color: cols[j], width: 2.2, pts: P.velocity_trace.map((u, i) => [(i + 1) * dtP, u[j] * 1000]) })),
+        { h: 140, x: [0, 20.3], y: [8, 52], xlabel: Lt('时间 (s)', 'Time (s)'), ylabel: Lt('气速 mm/s', 'Velocity mm/s'), xname: 't', digits: 1 });
+    }
+    const prevR = R.find(x => x.round === r.round - 1);
+    D.zh(state.run).then(Z => {
+      const z = Z[String(r.round)] || {}, zp = prevR ? Z[String(prevR.round)] || {} : {};
+      const ok = r.decision === 'accepted';
+      const outcome = `<p class="zh-t"><b class="${D.cls(r.mean_gain)}">${D.f2(r.mean_gain)}</b> · ${ok ? '晋升为新冠军' : r.decision === 'rejected_screen' ? '初筛被淘汰' : '没能稳定赢过冠军，未采纳'}</p><p class="en-t">${ok ? 'promoted to champion' : r.decision === 'rejected_screen' ? 'dropped at the quick screen' : 'did not reliably beat the champion; not adopted'}</p><p class="note">${L('这个结果会写进下一轮的证据里，模型据此更新笔记本、决定下一步。', 'This result goes into the next round\'s evidence; the model updates its notebook and plans the next step from it.')}</p>`;
+      document.getElementById('rzSteps').innerHTML = D.reasonSteps(z, r, outcome);
+      document.getElementById('rzRat').innerHTML = D.bitext(z.zh, r.rationale || r.error);
+      document.getElementById('rzNb').innerHTML = D.bitext(z.nb || '（该运行的笔记本暂只提供英文原文）', r.notes, 'nbt');
+      const pn = document.getElementById('rzPrevNb'); if (pn) pn.innerHTML = prevR ? D.bitext(zp.nb || '（该运行的笔记本暂只提供英文原文）', prevR.notes, 'nbt') : `<p class="note">${L('首轮，笔记本为空', 'First round: empty notebook')}</p>`;
+      Lang.bind(pane);
+    });
 
     D.rounds(state.run).then(rr => beforeAfter(rr, run, r, parentR, views));
   };

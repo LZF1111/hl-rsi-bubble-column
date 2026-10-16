@@ -1,7 +1,7 @@
 /* Bilingual UI: 中 / EN / 双语. L() returns markup for both languages; Lt() returns plain text for SVG/canvas. */
 (function () {
-  const KEY = 'hlflow.lang';
-  let mode = localStorage.getItem(KEY) || 'zh';
+  const KEY = 'hlflow.lang2';
+  let mode = localStorage.getItem(KEY) || 'bi';
   const listeners = [];
   function apply() {
     document.documentElement.classList.remove('lang-zh', 'lang-en', 'lang-bi');

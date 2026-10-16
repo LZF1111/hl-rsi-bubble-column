@@ -76,7 +76,7 @@
   /* opts: {nx, ny, tracers, mode:'alpha'|'uy', inlets, speed} */
   class FieldView {
     constructor(canvas, opts) {
-      this.c = canvas; this.o = Object.assign({ tracers: 0, mode: 'dev', inlets: false, speed: 1, lo: RANGE.lo, hi: RANGE.hi, dr: DEV_RANGE, smooth: 2 }, opts);
+      this.c = canvas; this.o = Object.assign({ tracers: 0, mode: 'dev', inlets: false, speed: 1, lo: RANGE.lo, hi: RANGE.hi, dr: DEV_RANGE, smooth: 2, ytop: 0.8 }, opts);
       this.g = canvas.getContext('2d'); this.parts = []; this.raf = 0; this.u = [0.03, 0.03, 0.03];
       this.reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
       this.off = document.createElement('canvas');
@@ -94,11 +94,12 @@
     box() { const ib = this.o.inlets ? Math.round(this.H * 0.045) : 0; return { w: this.W, h: this.H - ib, ib }; }
     render() {
       // render at grid-ish resolution then let canvas upscale smoothly: fast and looks like a CFD contour
-      const { nx, ny } = this.o, b = this.box(), w = Math.min(b.w, nx * 8), h = Math.min(b.h, ny * 8);
+      // only the lower ytop of the 1 m column is drawn (liquid 0.7 m + a little freeboard)
+      const { nx, ny, ytop } = this.o, b = this.box(), w = Math.min(b.w, nx * 8), h = Math.min(b.h, Math.round(ny * ytop * 8));
       this.off.width = w; this.off.height = h;
       const oc = this.off.getContext('2d'), img = oc.createImageData(w, h), d = img.data;
       for (let py = 0; py < h; py++) {
-        const y = (1 - (py + 0.5) / h) * ny;
+        const y = (1 - (py + 0.5) / h) * ny * ytop;
         for (let px = 0; px < w; px++) {
           const x = (px + 0.5) / w * nx, o = (py * w + px) * 4;
           let c;
@@ -127,21 +128,21 @@
       g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
       g.drawImage(this.off, 0, 0, b.w, b.h);
       if (this.o.window) {
-        const y0 = b.h * (1 - 0.05), y1 = b.h * (1 - 0.6);
+        const y0 = b.h * (1 - 0.05 / this.o.ytop), y1 = b.h * (1 - 0.6 / this.o.ytop);
         g.save(); g.strokeStyle = 'rgba(29,29,31,.45)'; g.lineWidth = this.dpr; g.setLineDash([3 * this.dpr, 3 * this.dpr]);
         g.beginPath(); g.moveTo(0, y0); g.lineTo(b.w, y0); g.moveTo(0, y1); g.lineTo(b.w, y1);
         g.moveTo(b.w / 3, y0); g.lineTo(b.w / 3, y1); g.moveTo(2 * b.w / 3, y0); g.lineTo(2 * b.w / 3, y1); g.stroke(); g.restore();
       }
       if (this.o.guide) {
         // scoring window 0.05–0.6 m split into thirds, and the 9 wall-pressure probes the model reads
-        const y0 = b.h * (1 - 0.05), y1 = b.h * (1 - 0.6), d = this.dpr;
+        const yt = this.o.ytop, y0 = b.h * (1 - 0.05 / yt), y1 = b.h * (1 - 0.6 / yt), d = this.dpr;
         g.save(); g.strokeStyle = 'rgba(29,29,31,.55)'; g.lineWidth = 1.2 * d; g.setLineDash([4 * d, 3 * d]);
         g.strokeRect(1 * d, y1, b.w - 2 * d, y0 - y1);
         g.beginPath(); g.moveTo(b.w / 3, y0); g.lineTo(b.w / 3, y1); g.moveTo(2 * b.w / 3, y0); g.lineTo(2 * b.w / 3, y1); g.stroke();
         g.setLineDash([]); g.fillStyle = 'rgba(29,29,31,.7)'; g.font = `600 ${10 * d}px -apple-system, "PingFang SC", sans-serif`; g.textAlign = 'center';
         [Lt('左', 'L'), Lt('中', 'C'), Lt('右', 'R')].forEach((s, i) => g.fillText(s, (i + 0.5) * b.w / 3, y0 - 6 * d));
         for (const hy of [0.15, 0.35, 0.55]) for (const fx of [1 / 6, 0.5, 5 / 6]) {
-          g.beginPath(); g.arc(fx * b.w, b.h * (1 - hy), 3.2 * d, 0, 2 * Math.PI);
+          g.beginPath(); g.arc(fx * b.w, b.h * (1 - hy / yt), 3.2 * d, 0, 2 * Math.PI);
           g.fillStyle = '#1d1d1f'; g.fill(); g.lineWidth = 1.5 * d; g.strokeStyle = '#fff'; g.stroke();
         }
         g.restore();

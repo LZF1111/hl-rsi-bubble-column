@@ -146,8 +146,9 @@
       { h: 260, x: [0, R.length + 1], y: [8, 46], xlabel: Lt('进化轮次', 'Round'), ylabel: Lt('中间口 mm/s', 'Centre, mm/s'), hover: false });
     C.scatter(fs, R.filter(r => r.velocity_trace && r.velocity_trace.length).map(r => { const s = D.sig(r); return { x: r.round, y: s.split[1], r: r.decision === 'accepted' ? 8 : 4.5, ring: r.decision === 'accepted', color: r.decision === 'accepted' ? '#0066cc' : r.decision === 'rejected_screen' ? '#e0a030' : '#c7c7cc', html: `<b>R${r.round}</b> ${s.split.join(' · ')} mm/s · ${D.f2(r.mean_gain)}`, onclick: () => goRound(r.round) }; }));
 
-    document.getElementById('tl').innerHTML = R.map(r => `<button class="tl-row${r.decision === 'accepted' ? ' acc' : ''}" data-r="${r.round}"><span class="r">R${r.round}</span>${pill(r.decision)}<span class="num ${D.cls(r.mean_gain)}">${D.f2(r.mean_gain)}</span><span class="num sp">${D.sig(r).split.join('/')}</span><span class="q">${D.esc(r.rationale || r.error || '')}</span></button>`).join('');
+    document.getElementById('tl').innerHTML = R.map(r => `<button class="tl-row${r.decision === 'accepted' ? ' acc' : ''}" data-r="${r.round}"><span class="r">R${r.round}</span>${pill(r.decision)}<span class="num ${D.cls(r.mean_gain)}">${D.f2(r.mean_gain)}</span><span class="num sp">${D.sig(r).split.join('/')}</span><span class="q" data-r="${r.round}">${D.esc(r.rationale || r.error || '')}</span></button>`).join('');
     pane.querySelectorAll('.tl-row').forEach(b => b.onclick = () => goRound(+b.dataset.r));
+    D.zh(state.run).then(Z => pane.querySelectorAll('.tl-row .q').forEach(q => { const z = Z[q.dataset.r]; if (z) q.innerHTML = `<span class="zh-t">${D.esc(z.act)}</span><span class="en-t">${D.esc(z.act_en)}</span>`; }));
     Lang.bind(pane);
 
     D.rounds(state.run).then(rr => {

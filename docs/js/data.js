@@ -100,10 +100,10 @@
   /* one side of a side-by-side CFD comparison */
   function vsPanel(id, title, sub, scoreLabel, win) {
     return `<div class="vs-col${win ? ' win' : ''}"><div class="vs-h"><b>${title}</b><span>${sub || ''}</span></div>
-      <div class="col-frame"><canvas id="${id}C"></canvas></div>
-      <div class="vs-k">${L('进气口气速 mm/s', 'Inlet gas velocity, mm/s')}</div><div id="${id}U"></div>
-      <div class="vs-k">${L('打分区 左 / 中 / 右 含气量 %', 'Gas in the left / centre / right blocks, %')}</div><div id="${id}T"></div>
-      <div class="vs-score"><span>${scoreLabel || L('不均匀度 I', 'Imbalance I')}</span><b id="${id}S">—</b></div></div>`;
+      <div class="vs-body"><div class="col-wrap"><div class="col-ax" aria-hidden="true"><span>0.8 m</span><span>0.6</span><span>0.4</span><span>0.2</span><span>0</span></div><div class="col-frame"><canvas id="${id}C"></canvas></div><div class="col-in">${L('左', 'L')}<i></i>${L('中', 'C')}<i></i>${L('右', 'R')}</div><div class="col-w">0.15 m</div></div>
+      <div class="vs-info"><div class="vs-k">${L('进气口气速 mm/s', 'Inlet gas velocity, mm/s')}</div><div id="${id}U"></div>
+      <div class="vs-k">${L('打分区 左/中/右 含气量 %', 'Gas in the L / C / R blocks, %')}</div><div id="${id}T"></div>
+      <div class="vs-score"><span>${scoreLabel || L('不均匀度 I', 'Imbalance I')}</span><b id="${id}S">—</b></div></div></div></div>`;
   }
   function vsFill(id, view, a, ux, uy, u, nx, ny, score) {
     view.set(a, ux, uy, u);
@@ -159,6 +159,18 @@
     return { draw, stop };
   }
 
+  /* Chinese translation of model-written text (rationale, step summaries, notebook), per run */
+  const zh = run => getJSON(`data/zh/${run}.json`).catch(() => ({}));
+  /* model text: Chinese translation beside the verbatim English, regardless of UI language */
+  function bitext(zhText, enText, cls) {
+    return `<div class="bt ${cls || ''}"><div><h6>中文译文</h6><div>${esc(zhText || '（暂无译文）')}</div></div><div><h6>English original</h6><div>${esc(enText || '—')}</div></div></div>`;
+  }
+  /* observe → hypothesise → change → outcome, from the model's own rationale */
+  function reasonSteps(z, r, outcome) {
+    const st = (n, zhH, enH, a, b) => `<div class="rz-s"><span class="rz-n">${n}</span><div><h5>${L(zhH, enH)}</h5><p class="zh-t">${esc(a || '—')}</p><p class="en-t">${esc(b || '—')}</p></div></div>`;
+    return `<div class="rz">${st(1, '它看到了什么', 'What it looked at', z.obs, z.obs_en)}${st(2, '它的假设', 'Its hypothesis', z.hyp, z.hyp_en)}${st(3, '它改了什么', 'What it changed', z.act, z.act_en)}<div class="rz-s out"><span class="rz-n">4</span><div><h5>${L('仿真给出的结果', 'What the simulation said')}</h5>${outcome}</div></div></div>`;
+  }
+
   /* how to read a column figure */
   function howto() {
     return `<div class="howto"><span><i class="h-dot"></i>${L('压力计：模型能看到的只有这 9 个读数', 'Pressure probes: the only 9 readings the model sees')}</span><span><i class="h-box"></i>${L('打分区（离底 5–60 cm），分左 / 中 / 右三块比含气量', 'Scoring zone (5–60 cm above the bottom), split into left / centre / right')}</span><span><i class="h-red"></i>${L('气偏多', 'more gas')}<i class="h-white"></i>${L('均匀', 'even')}<i class="h-blue"></i>${L('气偏少', 'less gas')}</span></div>`;
@@ -197,5 +209,5 @@
       <ul class="sc-r">${rules.join('')}</ul>`;
   }
 
-  window.D = { howto, scorecard, getJSON, RUNS, esc, f2, cls, episode, inletAt, rounds, roundEpisode, annotate, reveal, highlight, diff, vsPanel, vsFill, sig, sigText, delta, EQUAL, scene, cumPenalty, cumAt, player, frameAt };
+  window.D = { zh, bitext, reasonSteps, howto, scorecard, getJSON, RUNS, esc, f2, cls, episode, inletAt, rounds, roundEpisode, annotate, reveal, highlight, diff, vsPanel, vsFill, sig, sigText, delta, EQUAL, scene, cumPenalty, cumAt, player, frameAt };
 })();
