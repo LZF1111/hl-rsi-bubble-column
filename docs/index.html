@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HL · RSI — 语言模型自我改进的鼓泡塔控制</title>
+<meta name="description" content="启发式学习（HL）：语言模型写控制程序、真实 CFD 裁决、自维护笔记本递归改进。与 SAC 在混沌鼓泡塔上的对照。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="globalnav" aria-label="全局导航">
+  <div class="gn-inner">
+    <a class="gn-logo" href="#top">HL<span>·</span>RSI</a>
+    <a href="#overview">概览</a>
+    <a href="#console">控制台</a>
+    <a href="#loop">进化回路</a>
+    <a href="https://github.com/LZF1111/hl-rsi-bubble-column" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <p class="eyebrow">Heuristic Learning · Recursive Self-Improvement</p>
+  <h1>让语言模型<br>自己写控制器。</h1>
+  <p class="lead">一座混沌的鼓泡塔，三个底部入口。语言模型写程序，CFD 执行，评估器裁决，笔记本记账，下一轮读账再改。</p>
+  <div class="cta">
+    <a class="btn primary" href="#console">进入控制台</a>
+    <a class="btn link" href="#loop">看它如何进化 ›</a>
+  </div>
+  <div class="hero-visual" id="heroColumn" aria-hidden="true"></div>
+</header>
+
+<section class="stats" id="overview" aria-label="关键数字">
+  <div class="stat"><b id="kRounds">—</b><span>LLM 进化轮次（4 次无先验运行）</span></div>
+  <div class="stat"><b id="kSegments">—</b><span>真实 CFD 段（每段 0.1 s 物理时间）</span></div>
+  <div class="stat"><b id="kBest">—</b><span>最优冠军留出测试平均增益</span></div>
+  <div class="stat"><b>3.9 s⁻¹</b><span>有限时间 Lyapunov 指数，0.26 s 即"忘记"初态</span></div>
+</section>
+
+<section class="loop" id="loop">
+  <h2>每一轮，系统都在改写自己。</h2>
+  <p class="sub">HL 学的不是网络权重，而是一段可读的程序和一本自己写的实验笔记。</p>
+  <ol class="loop-ring" id="loopRing">
+    <li><i>01</i><b>读账</b><span>笔记本 + 冠军源码 + 轨迹 + 实验表 + MAP-Elites 存档</span></li>
+    <li><i>02</i><b>写程序</b><span>LLM 返回 source / rationale / notes</span></li>
+    <li><i>03</i><b>CFD 执行</b><span>twoPhaseEulerFoam，6 个开发条件并行</span></li>
+    <li><i>04</i><b>裁决</b><span>50 步初筛 → 配对 t 检验 → 3 个确认条件</span></li>
+    <li><i>05</i><b>记账</b><span>增益、行为格、轨迹写回学习状态 𝒮</span></li>
+  </ol>
+</section>
+
+<section class="console" id="console">
+  <aside class="sidebar" aria-label="功能栏">
+    <div class="sb-group">
+      <h3>任务</h3>
+      <button data-view="goal" class="active">控制目标 · 鼓泡塔</button>
+      <button data-view="strategy">可选控制策略</button>
+      <button data-view="range">控制范围与约束</button>
+      <button data-view="reward">奖励函数</button>
+      <button data-view="evaluator">评估器</button>
+      <button data-view="prompt">提示词</button>
+    </div>
+    <div class="sb-group">
+      <h3>运行</h3>
+      <div id="runList" class="run-list"></div>
+    </div>
+    <div class="sb-group">
+      <h3>结果</h3>
+      <button data-view="evolution">进化总览</button>
+      <button data-view="round">轮次详情</button>
+      <button data-view="archive">行为存档</button>
+      <button data-view="compare">HL 与 SAC</button>
+      <button data-view="mechanism">学到了什么</button>
+    </div>
+  </aside>
+  <main class="stage" id="stage" tabindex="-1" aria-live="polite"></main>
+</section>
+
+<footer class="foot">
+  <p>数据全部来自真实 OpenFOAM v2306 运行导出（state.json / events.jsonl / final_test.json）。LLM 原文保留英文。留出条件 ξ₇、ξ₈ 在学习中从未展示给模型。</p>
+  <p>同一几何、网格与工况下的扰动条件；不代表跨工况验证。</p>
+</footer>
+
+<script src="js/charts.js"></script>
+<script src="js/views.js"></script>
+<script src="js/results.js"></script>
+<script src="js/round.js"></script>
+<script src="js/compare.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
